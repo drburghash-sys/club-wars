@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+  <radialGradient id="bg" cx="50%" cy="38%" r="72%">
+    <stop offset="0" stop-color="#123b78"/>
+    <stop offset=".52" stop-color="#061b38"/>
+    <stop offset="1" stop-color="#020713"/>
+  </radialGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff2a6"/>
+    <stop offset=".3" stop-color="#ffd65b"/>
+    <stop offset=".68" stop-color="#e69b16"/>
+    <stop offset="1" stop-color="#8f5505"/>
+  </linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<path d="M70 352 33 318l54-11-28-51 61 4-3-59 55 22 20-57 42 42 42-42 20 57 55-22-3 59 61-4-28 51 54 11-37 34-49-4c-22 69-84 119-157 119S107 417 85 348z" fill="#041228" stroke="url(#gold)" stroke-width="7" opacity=".92"/>
+<g filter="url(#glow)">
+<path d="M174 118 206 55l50 46 50-46 32 63 70-13-31 66H135l-31-66z" fill="url(#gold)" stroke="#ffe67d" stroke-width="5"/>
+<circle cx="256" cy="239" r="105" fill="#07172d" stroke="url(#gold)" stroke-width="10"/>
+<circle cx="256" cy="239" r="78" fill="#d8a326" stroke="#fff0a1" stroke-width="3"/>
+<path d="m256 171 35 25-13 42h-44l-13-42z" fill="#07172d"/>
+<path d="m221 196-42 11-9 43 31 26 33-38zm70 0 42 11 9 43-31 26-33-38zM201 276l12 43 43 14v-45l-22-50zm110 0-12 43-43 14v-45l22-50z" fill="#07172d"/>
+</g>
+<text x="256" y="399" text-anchor="middle" font-family="Arial, sans-serif" font-size="84" font-weight="900" fill="url(#gold)" stroke="#1d1200" stroke-width="4" paint-order="stroke">CW</text>
+<text x="256" y="442" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="4" fill="#ffe99a">CLUB WARS</text>
+</svg>
