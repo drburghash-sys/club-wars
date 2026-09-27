@@ -201,6 +201,30 @@ body{display:flex;justify-content:center}
 .playerDetail h3{margin:0 0 4px;font-size:20px}.playerDetail .meta{font-size:10px;color:#9db1c5;margin-bottom:8px}.detailStats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.detailStats div{background:#081421;border:1px solid #1f3b55;border-radius:11px;padding:7px 4px;text-align:center}.detailStats small{display:block;color:#8fa5b9;font-size:8px}.detailStats b{font-size:14px}
 @media(max-width:390px){.sqCard{width:74px;height:108px}.sqCard .avatar{width:44px;height:44px}.sqCard .name{font-size:9px}.field{height:620px}.playerDetail{grid-template-columns:88px 1fr}}
 
+
+/* ===== Firebase Online Rooms ===== */
+.onlinePanel{
+  margin:8px 0 10px;padding:12px;border-radius:18px;
+  background:linear-gradient(145deg,#0b1c2d,#07131f);
+  border:1px solid #28506e;box-shadow:0 10px 28px #0006
+}
+.onlineHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.onlineHead b{font-size:14px}.onlineStatus{font-size:10px;color:#8ea3ba}
+.onlineStatus.ok{color:#63f0aa}.onlineStatus.warn{color:#ffd66b}.onlineStatus.bad{color:#ff7b88}
+.roomActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.roomJoin{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:7px}
+.roomJoin input{
+  min-width:0;background:#081522;border:1px solid #284963;border-radius:12px;
+  color:#fff;padding:10px 11px;text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:900
+}
+.roomBadge{
+  display:none;margin-top:9px;padding:10px;border-radius:14px;text-align:center;
+  background:#081826;border:1px solid #315a78
+}
+.roomBadge.show{display:block}.roomCode{font-size:26px;letter-spacing:5px;color:#ffe27b;font-weight:1000}
+.roomMeta{font-size:10px;color:#9fb2c4;margin-top:3px}
+.roomLeave{margin-top:8px;width:100%}
+
 </style>
 </head>
 <body>
@@ -297,6 +321,29 @@ body{display:flex;justify-content:center}
   <div class="top">
     <div class="user"><div class="crest">⚽</div><div><b>KSA10</b><span class="sub">Ranked</span></div></div>
     <button class="back" onclick="go('home')">×</button>
+  </div>
+
+  <div class="onlinePanel" id="onlinePanel">
+    <div class="onlineHead">
+      <div><b>اللعب المباشر عبر Firebase</b><div class="onlineStatus warn" id="fbStatus">جاري الاتصال...</div></div>
+      <span class="sub" id="uidShort">—</span>
+    </div>
+    <div id="roomIdle">
+      <div class="roomActions">
+        <button class="goldBtn" onclick="onlineCreateRoom()">إنشاء غرفة</button>
+        <button class="ghostBtn" onclick="document.getElementById('roomCodeInput').focus()">لدي رمز</button>
+      </div>
+      <div class="roomJoin">
+        <input id="roomCodeInput" maxlength="6" placeholder="رمز الغرفة">
+        <button class="blueBtn" onclick="onlineJoinRoom()">دخول</button>
+      </div>
+    </div>
+    <div class="roomBadge" id="roomBadge">
+      <div class="sub">رمز الغرفة</div>
+      <div class="roomCode" id="roomCodeText">------</div>
+      <div class="roomMeta" id="roomMeta">بانتظار اللاعب الثاني...</div>
+      <button class="ghostBtn roomLeave" onclick="onlineLeaveRoom()">مغادرة الغرفة</button>
+    </div>
   </div>
   <div class="battleTop">
     <div class="team"><b>KSA10</b><div class="sub">أنت</div></div>
@@ -467,6 +514,10 @@ function enemyPick(){
 }
 function lockChoice(){
  if(S.sel===null||!S.attr)return;
+ if(window.clubWarsOnline?.active){
+   window.clubWarsOnline.lockSelection(S.sel,S.attr);
+   return;
+ }
  document.getElementById("lockBtn").disabled=true;
  const [ei,ea]=enemyPick(),me=players[S.sel],op=enemies[ei];
  document.getElementById("secret").innerHTML=`الخصم اختار <b>${attrMeta[ea][1]} ${attrMeta[ea][0]}</b> · شعار <b>${op.club}</b><br><span class="sub">اسم اللاعب والرقم لا يظهران إلا بعد الكشف</span>`;
@@ -527,26 +578,272 @@ if ("serviceWorker" in navigator) {
 </script>
 
 <script type="module" id="firebase-bootstrap">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {
+  getDatabase, ref, set, get, update, onValue, onDisconnect,
+  serverTimestamp, runTransaction, remove
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBRt7L-kvLCYftrZ2eYENnLp3cWd0T-vYk",
-    authDomain: "club-war.firebaseapp.com",
-    projectId: "club-war",
-    storageBucket: "club-war.firebasestorage.app",
-    messagingSenderId: "419334333586",
-    appId: "1:419334333586:web:3937fac1992a424c5c724b",
-    measurementId: "G-PND8XNN806"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBRt7L-kvLCYftrZ2eYENnLp3cWd0T-vYk",
+  authDomain: "club-war.firebaseapp.com",
+  databaseURL: "https://club-war-default-rtdb.firebaseio.com/",
+  projectId: "club-war",
+  storageBucket: "club-war.firebasestorage.app",
+  messagingSenderId: "419334333586",
+  appId: "1:419334333586:web:3937fac1992a424c5c724b",
+  measurementId: "G-PND8XNN806"
+};
 
-  const app = initializeApp(firebaseConfig);
-  if (await analyticsSupported()) {
-    getAnalytics(app);
+const app = initializeApp(firebaseConfig);
+if (await analyticsSupported()) getAnalytics(app);
+
+const auth = getAuth(app);
+const db = getDatabase(app);
+let uid = null;
+let roomId = null;
+let role = null;
+let unsubRoom = null;
+let resolvingRound = false;
+let advanceTimer = null;
+
+const statusEl = () => document.getElementById("fbStatus");
+const shortEl = () => document.getElementById("uidShort");
+const badgeEl = () => document.getElementById("roomBadge");
+const idleEl = () => document.getElementById("roomIdle");
+const codeEl = () => document.getElementById("roomCodeText");
+const metaEl = () => document.getElementById("roomMeta");
+
+function setStatus(text, cls="warn"){
+  const el=statusEl(); if(!el) return;
+  el.textContent=text; el.className="onlineStatus "+cls;
+}
+function code6(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out=""; for(let i=0;i<6;i++) out+=chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+function roleKey(){
+  return role === "host" ? "host" : "guest";
+}
+function otherRole(){
+  return role === "host" ? "guest" : "host";
+}
+function playerForIndex(i){
+  return window.players?.[i] || players?.[i];
+}
+function setRoomUi(active, code="", meta=""){
+  if(badgeEl()) badgeEl().classList.toggle("show",active);
+  if(idleEl()) idleEl().style.display=active?"none":"block";
+  if(codeEl()) codeEl().textContent=code || "------";
+  if(metaEl()) metaEl().textContent=meta || "";
+}
+function safeBattleRender(){
+  if(typeof renderBattle==="function") renderBattle();
+}
+function syncLocalFromRoom(room){
+  if(!room) return;
+  S.round = room.round || 1;
+  S.me = role==="host" ? (room.score?.host||0) : (room.score?.guest||0);
+  S.op = role==="host" ? (room.score?.guest||0) : (room.score?.host||0);
+  const own = roleKey(), opp = otherRole();
+  const rounds = room.rounds || {};
+  S.used = [];
+  S.eused = [];
+  Object.values(rounds).forEach(r=>{
+    if(r?.picks?.[own]?.cardIndex!==undefined) S.used.push(r.picks[own].cardIndex);
+    if(r?.picks?.[opp]?.cardIndex!==undefined) S.eused.push(r.picks[opp].cardIndex);
+  });
+  if(room.status==="finished"){
+    safeBattleRender();
+    document.getElementById("secret").innerHTML = "<b>انتهت المباراة الأونلاين</b>";
+    return;
   }
+  safeBattleRender();
+}
+function revealRound(room, roundNo){
+  const r = room?.rounds?.[roundNo];
+  if(!r?.result) return;
+  const own = roleKey(), opp=otherRole();
+  const myPick=r.picks?.[own], opPick=r.picks?.[opp];
+  if(!myPick || !opPick) return;
+  const me=players[myPick.cardIndex], op=players[opPick.cardIndex];
+  const myVal=me?.[myPick.attr], opVal=op?.[opPick.attr];
+  if(!me || !op) return;
+  const eb=document.getElementById("enemyBig");
+  if(eb){ eb.className="big enemy"; eb.innerHTML=bigCard(op,true); }
+  const msg = r.result.winner==="draw" ? "🤝 تعادل"
+    : r.result.winner===own ? "✅ النقطة لك" : "❌ النقطة للخصم";
+  const secret=document.getElementById("secret");
+  if(secret) secret.innerHTML =
+    `${me.n} · ${attrMeta[myPick.attr][0]} <b>${myVal}</b> &nbsp; VS &nbsp; ${op.n} · ${attrMeta[opPick.attr][0]} <b>${opVal}</b><br><b style="color:#ffdc74">${msg}</b>`;
+}
+async function resolveIfHost(room){
+  if(role!=="host" || resolvingRound || !room || room.status!=="playing") return;
+  const roundNo=room.round||1;
+  const r=room.rounds?.[roundNo];
+  if(!r?.picks?.host || !r?.picks?.guest || r.result) return;
+  resolvingRound=true;
+  const hp=r.picks.host, gp=r.picks.guest;
+  const h=players[hp.cardIndex], g=players[gp.cardIndex];
+  const hv=h?.[hp.attr], gv=g?.[gp.attr];
+  if(hv===undefined || gv===undefined){ resolvingRound=false; return; }
+  const winner = hv===gv ? "draw" : (hv>gv ? "host" : "guest");
+  const patch={};
+  patch[`rooms/${roomId}/rounds/${roundNo}/result`] = {winner,hostValue:hv,guestValue:gv,resolvedAt:serverTimestamp()};
+  let hs=room.score?.host||0, gs=room.score?.guest||0;
+  if(winner==="host") hs++;
+  else if(winner==="guest") gs++;
+  else { hs++; gs++; }
+  patch[`rooms/${roomId}/score`] = {host:hs,guest:gs};
+  if(roundNo>=11){
+    patch[`rooms/${roomId}/status`] = "finished";
+  }
+  await update(ref(db),patch);
+  resolvingRound=false;
 
-  window.clubWarsFirebase = { app, firebaseConfig };
-  window.dispatchEvent(new CustomEvent("clubwars:firebase-ready"));
+  if(roundNo<11){
+    clearTimeout(advanceTimer);
+    advanceTimer=setTimeout(async()=>{
+      const snap=await get(ref(db,`rooms/${roomId}`));
+      const latest=snap.val();
+      if(latest && latest.round===roundNo && latest.rounds?.[roundNo]?.result){
+        await update(ref(db,`rooms/${roomId}`),{round:roundNo+1});
+      }
+    },1600);
+  }
+}
+function watchRoom(code){
+  if(unsubRoom) unsubRoom();
+  const roomRef=ref(db,`rooms/${code}`);
+  unsubRoom=onValue(roomRef, snap=>{
+    const room=snap.val();
+    if(!room){
+      setRoomUi(false);
+      roomId=null; role=null;
+      window.clubWarsOnline.active=false;
+      return;
+    }
+    const me=uid;
+    role = room.hostUid===me ? "host" : (room.guestUid===me ? "guest" : role);
+    const active = !!role;
+    window.clubWarsOnline.active=active;
+    setRoomUi(true,code,
+      room.status==="waiting" ? "بانتظار اللاعب الثاني..." :
+      room.status==="playing" ? `متصلان · الجولة ${room.round||1} من 11` :
+      "انتهت المباراة");
+    syncLocalFromRoom(room);
+    const current=room.round||1;
+    const currentRound=room.rounds?.[current];
+    const own=roleKey(), opp=otherRole();
+    if(currentRound?.picks?.[opp] && !currentRound?.result){
+      const op=players[currentRound.picks[opp].cardIndex];
+      const secret=document.getElementById("secret");
+      if(secret) secret.innerHTML=`الخصم ثبّت <b>${attrMeta[currentRound.picks[opp].attr][1]} ${attrMeta[currentRound.picks[opp].attr][0]}</b> · الشعار <b>${op.club}</b><br><span class="sub">اسم اللاعب والرقم مخفيان حتى يثبت الطرفان</span>`;
+    }
+    if(currentRound?.result) revealRound(room,current);
+    resolveIfHost(room);
+  });
+}
+
+window.clubWarsOnline = {
+  active:false,
+  async lockSelection(cardIndex, attr){
+    if(!uid || !roomId || !role) return;
+    const roomSnap=await get(ref(db,`rooms/${roomId}`));
+    const room=roomSnap.val();
+    if(!room || room.status!=="playing") return;
+    const roundNo=room.round||1;
+    const path=`rooms/${roomId}/rounds/${roundNo}/picks/${roleKey()}`;
+    const existing=await get(ref(db,path));
+    if(existing.exists()) return;
+    await set(ref(db,path),{uid,cardIndex,attr,lockedAt:serverTimestamp()});
+    const lock=document.getElementById("lockBtn"); if(lock) lock.disabled=true;
+    const secret=document.getElementById("secret");
+    if(secret) secret.textContent="تم تثبيت اختيارك. بانتظار الخصم...";
+  }
+};
+
+window.onlineCreateRoom = async function(){
+  if(!uid){ setStatus("لم يكتمل تسجيل الدخول بعد","bad"); return; }
+  let code, roomRef;
+  for(let attempt=0;attempt<6;attempt++){
+    code=code6(); roomRef=ref(db,`rooms/${code}`);
+    const snap=await get(roomRef); if(!snap.exists()) break;
+  }
+  await set(roomRef,{
+    status:"waiting",hostUid:uid,guestUid:null,createdAt:serverTimestamp(),
+    round:1,score:{host:0,guest:0},
+    players:{host:{uid,name:"المضيف"}}
+  });
+  roomId=code; role="host"; window.clubWarsOnline.active=true;
+  setRoomUi(true,code,"بانتظار اللاعب الثاني...");
+  watchRoom(code);
+};
+
+window.onlineJoinRoom = async function(){
+  if(!uid){ setStatus("لم يكتمل تسجيل الدخول بعد","bad"); return; }
+  const input=document.getElementById("roomCodeInput");
+  const code=(input?.value||"").trim().toUpperCase();
+  if(code.length!==6){ setStatus("أدخل رمز غرفة من 6 خانات","bad"); return; }
+  const roomRef=ref(db,`rooms/${code}`);
+  const tx=await runTransaction(roomRef,room=>{
+    if(!room || room.status!=="waiting" || (room.guestUid && room.guestUid!==uid)) return;
+    room.guestUid=uid;
+    room.status="playing";
+    room.players=room.players||{};
+    room.players.guest={uid,name:"الضيف"};
+    room.startedAt=Date.now();
+    return room;
+  });
+  if(!tx.committed){ setStatus("الغرفة غير موجودة أو ممتلئة","bad"); return; }
+  roomId=code; role="guest"; window.clubWarsOnline.active=true;
+  setRoomUi(true,code,"تم الاتصال بالمضيف");
+  watchRoom(code);
+};
+
+window.onlineLeaveRoom = async function(){
+  if(!roomId || !uid) return;
+  const code=roomId;
+  const r=role;
+  if(r==="host"){
+    await remove(ref(db,`rooms/${code}`));
+  }else{
+    await update(ref(db,`rooms/${code}`),{guestUid:null,status:"waiting",guestLeftAt:serverTimestamp()});
+    await remove(ref(db,`rooms/${code}/players/guest`));
+  }
+  if(unsubRoom) unsubRoom();
+  roomId=null; role=null; window.clubWarsOnline.active=false;
+  S={round:1,me:0,op:0,used:[],eused:[],sel:null,attr:null};
+  setRoomUi(false); safeBattleRender();
+};
+
+onAuthStateChanged(auth, async user=>{
+  if(user){
+    uid=user.uid;
+    setStatus("متصل بـ Firebase","ok");
+    if(shortEl()) shortEl().textContent="ID "+uid.slice(0,6);
+    await set(ref(db,`users/${uid}/profile`),{
+      createdOrSeenAt:serverTimestamp(),
+      nickname:"Player-"+uid.slice(0,5)
+    });
+    const pres=ref(db,`presence/${uid}`);
+    await set(pres,{online:true,lastSeen:serverTimestamp()});
+    onDisconnect(pres).set({online:false,lastSeen:serverTimestamp()});
+  }else{
+    setStatus("جاري تسجيل الدخول...","warn");
+    try{ await signInAnonymously(auth); }
+    catch(err){
+      console.error(err);
+      setStatus("تعذر تسجيل الدخول: "+(err.code||"خطأ"),"bad");
+    }
+  }
+});
+
+window.clubWarsFirebase={app,auth,db,firebaseConfig};
+window.dispatchEvent(new CustomEvent("clubwars:firebase-ready"));
 </script>
 
 </body>
