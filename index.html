@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#07111f">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<meta name="application-name" content="Club Wars">
+<meta name="apple-mobile-web-app-title" content="Club Wars">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Club Wars</title>
+<style>
+:root{
+  --bg:#06101b;--bg2:#0a1726;--panel:#0b1a2b;--panel2:#0d2237;--line:#1a3856;
+  --gold:#ffc94b;--gold2:#f29d17;--blue:#19a8ff;--cyan:#46d6ff;--green:#24d884;
+  --red:#ff5365;--purple:#8f4dff;--text:#f8fbff;--muted:#8ea3ba;--shadow:0 18px 45px #0008;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#02070d;color:var(--text);font-family:system-ui,-apple-system,"SF Arabic","Segoe UI",Tahoma,Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+body{display:flex;justify-content:center}
+#app{
+  width:100%;max-width:480px;min-height:100dvh;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 20% -10%,#174f8f 0,transparent 29%),
+    radial-gradient(circle at 92% 8%,#5d4008 0,transparent 25%),
+    linear-gradient(180deg,#071320 0%,#06101a 60%,#03080f 100%);
+}
+#app:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;
+  background-image:linear-gradient(120deg,transparent 0 48%,#ffffff08 49% 51%,transparent 52% 100%);
+  background-size:38px 38px;
+}
+.screen{display:none;padding:0 14px 92px;min-height:100dvh;animation:fade .22s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:none}}
+.top{
+  height:72px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:max(8px,env(safe-area-inset-top));
+}
+.user{display:flex;align-items:center;gap:9px;min-width:0}
+.crest{
+  width:43px;height:43px;border-radius:12px;display:grid;place-items:center;font-size:22px;
+  background:linear-gradient(145deg,#0b5d58,#07312f);border:1.5px solid var(--gold);box-shadow:0 0 18px #ffc94b25
+}
+.user b{display:block;font-size:14px}.sub{font-size:10px;color:var(--muted)}
+.wallet{display:flex;gap:6px}
+.wallet span{background:#081421;border:1px solid #173651;border-radius:10px;padding:7px 8px;font-size:11px;white-space:nowrap}
+.hero{
+  position:relative;min-height:285px;border-radius:26px;overflow:hidden;border:1px solid #9d7621;
+  background:
+    radial-gradient(circle at 77% 35%,#ffce5655 0,transparent 34%),
+    linear-gradient(140deg,#111822 0%,#1b180f 48%,#0a1018 100%);
+  box-shadow:var(--shadow),inset 0 0 60px #e6a71b12;padding:22px 18px;margin-top:6px
+}
+.hero:after{content:"⚽";position:absolute;left:-14px;bottom:-42px;font-size:230px;opacity:.075;filter:drop-shadow(0 0 20px #fff)}
+.hero .eyebrow{font-size:11px;color:#ffdc80;letter-spacing:.8px}.hero h1{font-size:37px;margin:14px 0 2px;color:#ffe58d}.hero h2{font-size:21px;margin:0 0 7px}.hero p{color:#bcc9d6;font-size:12px;max-width:65%;line-height:1.8}
+.goldBtn,.blueBtn,.ghostBtn,.dangerBtn{
+  border:0;border-radius:14px;padding:12px 16px;font-weight:900;color:#0b1014
+}
+.goldBtn{background:linear-gradient(#ffe07a,#efa51d);box-shadow:0 0 24px #ffbf3850}
+.blueBtn{background:linear-gradient(#36bdff,#087dd2);color:white;box-shadow:0 0 22px #149ef84a}
+.ghostBtn{background:#0c1c2d;color:#d9e6f3;border:1px solid #274a68}
+.dangerBtn{background:linear-gradient(#ff6c77,#c82e43);color:white}
+.heroCard{
+  position:absolute;left:16px;top:34px;width:145px;height:205px;border-radius:25px 25px 18px 18px;
+  background:linear-gradient(145deg,#533c08 0,#f9cc54 20%,#171711 48%,#5c3d03 100%);
+  border:2px solid #ffdc69;transform:rotate(-2deg);box-shadow:0 0 35px #ffca584f;padding:10px;text-align:center
+}
+.heroCard .rating{font-size:29px;font-weight:1000;position:absolute;right:10px;top:10px}.heroCard .pos{font-size:12px;position:absolute;right:14px;top:45px}.portrait{font-size:72px;margin-top:38px;filter:drop-shadow(0 6px 10px #0008)}.heroCard .pname{font-weight:1000;font-size:18px}
+.quickGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.qtile{
+  min-height:106px;border-radius:19px;padding:14px;background:linear-gradient(145deg,#0d1c2f,#07121f);
+  border:1px solid #20415f;position:relative;overflow:hidden;box-shadow:0 10px 24px #0005
+}
+.qtile.gold{border-color:#8b6a24}.qtile.purple{border-color:#5e3ea6}.qtile.blue{border-color:#1b66a0}
+.qtile .ico{font-size:27px;margin-bottom:8px}.qtile b{font-size:16px}.qtile p{font-size:10px;color:var(--muted);margin:5px 0}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:17px 0 10px}.sectionTitle h2{margin:0;font-size:20px}
+.banner{
+  border-radius:20px;padding:15px;border:1px solid #6e4f15;background:linear-gradient(120deg,#111821,#20160a);
+  display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px
+}
+.banner h3{margin:0;color:#ffdc70}.banner p{margin:3px 0;color:#aebdcd;font-size:10px}
+.bottom{
+  position:fixed;z-index:40;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,480px);
+  height:76px;background:linear-gradient(180deg,#081522f5,#040a10fa);border-top:1px solid #1b354d;
+  display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:max(4px,env(safe-area-inset-bottom))
+}
+.bottom button{background:none;border:0;color:#8194a7;font-size:10px;display:grid;place-items:center;align-content:center;gap:2px}
+.bottom button .bi{font-size:22px}.bottom button.active{color:#ffd667}.bottom button.active .bi{filter:drop-shadow(0 0 8px #ffc13c)}
+.backTitle{display:flex;align-items:center;justify-content:space-between;padding-top:8px}.backTitle h1{font-size:26px;margin:10px 0}.back{width:40px;height:40px;border-radius:12px;background:#0d1d2c;border:1px solid #27445f;color:white}
+.statsStrip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.statBox{background:#0b1a29;border:1px solid #1f3c57;border-radius:14px;padding:9px;text-align:center}.statBox b{font-size:20px}.statBox small{display:block;color:var(--muted);font-size:9px}
+.field{
+  height:570px;border-radius:26px;position:relative;overflow:hidden;border:1px solid #1d6747;margin-bottom:14px;
+  background:
+   linear-gradient(#0d542f88,#06311d88),
+   repeating-linear-gradient(90deg,#0f4b2a 0 58px,#154f2d 58px 116px);
+  box-shadow:inset 0 0 40px #001e0e,0 16px 40px #0006
+}
+.field:before{content:"";position:absolute;inset:24px;border:2px solid #ffffff32;border-radius:5px}
+.field:after{content:"";position:absolute;width:115px;height:115px;border:2px solid #ffffff28;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}
+.link{position:absolute;height:4px;transform-origin:0 50%;border-radius:10px;z-index:1;opacity:.9}
+.link.good{background:#36df7f;box-shadow:0 0 8px #36df7f}.link.mid{background:#f1be37}.link.none{background:#d83e4d}
+.pcard{
+  width:78px;height:108px;position:absolute;z-index:3;border-radius:17px 17px 13px 13px;text-align:center;padding:6px;
+  background:linear-gradient(145deg,#4b3507,#e1ad2d 23%,#11151d 51%,#453004 100%);border:1.5px solid #ffd45f;box-shadow:0 7px 20px #0008
+}
+.pcard.special{background:linear-gradient(145deg,#0c3f7a,#178be0 27%,#111525 58%,#151f5b);border-color:#3bb9ff}
+.pcard.icon{background:linear-gradient(145deg,#efe4c8,#ffffff 27%,#d6c5a0 58%,#8a723e);color:#1a1a18;border-color:white}
+.pcard .r{font-weight:1000;font-size:15px;position:absolute;right:6px}.pcard .pp{font-size:8px;position:absolute;left:6px;top:7px}.pcard .face{font-size:33px;margin-top:18px}.pcard .nm{font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chemDot{width:18px;height:18px;border-radius:50%;background:#0c1722;border:1px solid #47708e;position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);display:grid;place-items:center;font-size:8px}
+.chemLegend{background:#0a1928;border:1px solid #203b53;border-radius:18px;padding:12px}.chemLegend h3{margin:0 0 8px}.legendRow{display:flex;align-items:center;gap:7px;font-size:11px;color:#b9c8d7;margin:7px 0}.dotc{width:9px;height:9px;border-radius:50%}
+.battleTop{
+  margin-top:6px;border-radius:18px;background:#081725;border:1px solid #234664;padding:11px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px
+}
+.battleTop .team{text-align:center}.battleScore{font-size:33px;font-weight:1000;color:#ffe27b}
+.roundTrack{display:flex;gap:4px;justify-content:center;margin:10px 0 5px}.roundBubble{width:27px;height:27px;border-radius:50%;border:1px solid #2f4c68;display:grid;place-items:center;font-size:10px;color:#91a6ba}.roundBubble.done{background:#0e6a42;color:white;border-color:#2ee68d}.roundBubble.now{border:2px solid var(--gold);color:#ffd86b}
+.enemyRow{display:flex;gap:4px;justify-content:center;margin:9px 0 12px}.enemyMini{width:32px;height:47px;border-radius:7px;border:1px solid #7f2739;background:linear-gradient(#221017,#0b0a0d);display:grid;place-items:center;color:#ffc861;font-weight:900}.enemyMini.used{opacity:.18}
+.secret{
+  background:linear-gradient(145deg,#0c1c2c,#0b1522);border:1px solid #264866;border-radius:16px;padding:10px;text-align:center;font-size:12px;color:#cbd8e5;margin-bottom:10px
+}
+.duel{display:grid;grid-template-columns:1fr 62px 1fr;gap:8px;align-items:center}.vs{font-size:30px;font-weight:1000;color:#ffdf78;text-align:center;filter:drop-shadow(0 0 12px #ffc94b)}
+.big{
+  min-height:265px;border-radius:23px;padding:12px;text-align:center;position:relative;border:2px solid #d9aa34;
+  background:linear-gradient(145deg,#4c3709,#d9aa34 22%,#10141b 50%,#382703 100%);box-shadow:0 0 25px #eeb9342e
+}
+.big.enemy{border-color:#9c3041;background:linear-gradient(145deg,#391018,#11151c 50%,#19080d)}
+.big.icon{background:linear-gradient(145deg,#f2e3c6,#fff 25%,#d9c6a1 58%,#7b6332);color:#111}
+.big .br{position:absolute;right:12px;top:10px;font-size:27px;font-weight:1000}.big .bp{position:absolute;left:12px;top:16px;font-size:10px}.big .bface{font-size:78px;margin-top:46px}.big .bn{font-size:17px;font-weight:1000}.bclub{font-size:9px;color:#eedb9c}
+.attrGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.attr{border:1px solid #294b68;background:#0b1b2c;color:white;border-radius:12px;padding:9px;text-align:right}.attr.selected{border-color:#27b8ff;background:#0b3351;box-shadow:0 0 16px #27b8ff42}.attr b{float:left}
+.confirm{width:100%;margin-top:9px}
+.myDeck{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.deckCard{background:#0b1724;border:1px solid #24435d;border-radius:12px;padding:6px;text-align:center;min-height:85px}.deckCard .df{font-size:31px}.deckCard b{font-size:9px;display:block}.deckCard.used{filter:grayscale(1);opacity:.25;pointer-events:none}.deckCard.sel{outline:2px solid var(--cyan);box-shadow:0 0 18px #34c9ff35}
+.searchbar{display:flex;gap:7px}.searchbar input{flex:1;background:#0a1928;border:1px solid #23425f;border-radius:13px;color:white;padding:11px 12px}.filterBtn{width:45px;border-radius:13px;border:1px solid #23425f;background:#0a1928;color:#bcd0e0}
+.marketList{display:grid;gap:8px;margin-top:10px}.marketCard{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:center;background:#0a1928;border:1px solid #203c57;border-radius:16px;padding:9px}.thumb{width:58px;height:76px;border-radius:12px;background:linear-gradient(145deg,#6e520b,#11161f);border:1px solid #ffcf55;display:grid;place-items:center;font-size:33px;position:relative}.thumb span{position:absolute;right:4px;top:3px;font-size:11px;font-weight:900}.price{color:#ffd360;font-weight:900}
+.packHero{border-radius:23px;padding:16px;min-height:215px;border:1px solid #8a6620;background:radial-gradient(circle at 75% 40%,#ffca4845,transparent 35%),linear-gradient(145deg,#191910,#08131e);position:relative;overflow:hidden}.packHero h2{font-size:28px;color:#ffda67;margin:7px 0}.packObj{position:absolute;left:22px;top:28px;font-size:110px;filter:drop-shadow(0 0 22px #eab63c)}
+.packGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:10px}.pack{background:#0a1827;border:1px solid #25435f;border-radius:17px;padding:12px}.pack .art{height:95px;border-radius:14px;display:grid;place-items:center;font-size:52px;background:linear-gradient(145deg,#73530a,#111)}.pack:nth-child(2) .art{background:linear-gradient(145deg,#0c366c,#20102d)}.pack:nth-child(3) .art{background:linear-gradient(145deg,#64256d,#132154)}.pack:nth-child(4) .art{background:linear-gradient(145deg,#e9dfc8,#6f5c2d)}
+.sbcTabs,.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:#081523;border:1px solid #193650;border-radius:14px;padding:5px}.sbcTabs button,.seg button{border:0;background:transparent;color:#8fa4b8;border-radius:10px;padding:8px 4px;font-size:10px}.sbcTabs button.active,.seg button.active{background:#0d6db3;color:white}
+.sbcHero{margin-top:10px;border-radius:22px;border:1px solid #6b3daa;background:linear-gradient(140deg,#251045,#0a1422 65%);padding:15px;display:grid;grid-template-columns:1fr 120px;align-items:center}.sbcHero h2{margin:0;color:#d9b4ff}.sbcCard{height:165px;border-radius:22px;background:linear-gradient(145deg,#5e1e9a,#0c1d45);border:2px solid #a76cff;display:grid;place-items:center;font-size:70px}
+.req{background:#091827;border:1px solid #203d57;border-radius:16px;padding:12px;margin-top:8px}.req .rr{display:flex;justify-content:space-between;border-bottom:1px solid #163149;padding:8px 0;font-size:11px}.req .rr:last-child{border-bottom:0}
+.tasksHead{border-radius:22px;padding:16px;background:linear-gradient(140deg,#102248,#091522);border:1px solid #2f5f92}.tasksHead h2{margin:0;color:#69c8ff}.task{background:#0a1928;border:1px solid #203c56;border-radius:16px;padding:12px;margin-top:8px}.taskTop{display:flex;justify-content:space-between;align-items:center}.progress{height:8px;background:#07111c;border:1px solid #1e3b54;border-radius:20px;overflow:hidden;margin-top:8px}.progress i{display:block;height:100%;background:linear-gradient(90deg,#0b85df,#3fd6ff)}
+.rankHero{text-align:center;padding:14px;border-radius:22px;border:1px solid #806321;background:radial-gradient(circle at 50% 15%,#ffcc4034,transparent 40%),#0b1825}.rankShield{font-size:78px;filter:drop-shadow(0 0 22px #ffcb44)}.rankHero h1{margin:0;color:#ffdc72}.rankSteps{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-top:10px}.rankSteps span{height:9px;border-radius:8px;background:#172a3d}.rankSteps span.on{background:linear-gradient(90deg,#ffc33d,#ffe884)}
+.rewardList{display:grid;gap:8px;margin-top:10px}.reward{display:grid;grid-template-columns:50px 1fr auto;gap:10px;align-items:center;background:#0a1827;border:1px solid #203b55;border-radius:15px;padding:9px}.reward.strong{border-color:#8d6920;background:linear-gradient(90deg,#21180a,#0a1827)}
+.modal{position:fixed;inset:0;z-index:100;background:#000c;display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(100%,480px);background:#091725;border:1px solid #2b4d69;border-radius:26px 26px 0 0;padding:20px 16px 28px;box-shadow:0 -20px 60px #000b}.sheet h2{text-align:center}
+.resultScore{font-size:54px;text-align:center;font-weight:1000;color:#ffe17c}
+@media(min-width:700px){#app{margin:18px 0;min-height:940px;border-radius:34px;box-shadow:0 0 0 1px #27415a,0 30px 80px #000;overflow:hidden}.bottom{bottom:18px;border-radius:0 0 34px 34px}}
+
+/* ===== V3 Squad polish ===== */
+#squad{padding-left:10px;padding-right:10px}
+#squad .backTitle{padding:8px 4px 0}
+#squad .backTitle h1{font-size:30px;color:#fff4cf;text-shadow:0 0 22px #ffc94b33}
+#squad .statsStrip{gap:10px;margin:8px 0 14px}
+#squad .statBox{padding:12px 8px;background:linear-gradient(180deg,#0c1f32,#081522);border-color:#2a4e6e;box-shadow:inset 0 1px #ffffff08,0 8px 22px #0006}
+#squad .statBox b{font-size:24px;color:#fff}
+#squad .statBox small{font-size:10px;letter-spacing:.2px}
+#squad .statBox.chem b{color:#63f0aa}
+#squad .field{
+  height:650px;margin-bottom:12px;border:1px solid #2b7e58;border-radius:30px;
+  background:
+    radial-gradient(circle at 50% 22%,#21a65a25 0,transparent 32%),
+    linear-gradient(#0c633788,#07351f9c),
+    repeating-linear-gradient(90deg,#0e4828 0 55px,#13522f 55px 110px);
+  box-shadow:inset 0 0 50px #001b0d,0 22px 50px #0007,0 0 0 1px #0d2d21;
+}
+#squad .field:before{inset:22px;border-color:#d6ffe832}
+#squad .field:after{width:130px;height:130px;border-color:#d6ffe82e}
+.chemSvg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;filter:drop-shadow(0 0 4px currentColor)}
+.chemSvg line{stroke-width:1.2;stroke-linecap:round;opacity:.88}
+.chemSvg .good{stroke:#31e985}.chemSvg .mid{stroke:#f3c23d}.chemSvg .off{display:none}
+.sqCard{
+  width:82px;height:116px;position:absolute;z-index:3;border-radius:18px 18px 15px 15px;
+  transform:translate(-50%,-50%);overflow:visible;padding:7px 6px 8px;text-align:center;
+  border:1.5px solid #ffd965;background:linear-gradient(150deg,#7b5a0b 0,#f2bd36 18%,#151820 49%,#3a2805 100%);
+  box-shadow:0 10px 26px #000a,0 0 18px #ffc94b20,inset 0 1px #fff3;
+}
+.sqCard.special{border-color:#48c6ff;background:linear-gradient(150deg,#0b3569,#178ee0 22%,#101522 53%,#15255e);box-shadow:0 10px 26px #000a,0 0 18px #2fb8ff36}
+.sqCard.icon{border-color:#fff1c6;background:linear-gradient(150deg,#fff8e6 0,#d8c38c 28%,#f2ead7 58%,#977b3e 100%);color:#17191c;box-shadow:0 10px 26px #0009,0 0 18px #fff0b836}
+.sqCard .rating{position:absolute;right:7px;top:5px;font-size:18px;font-weight:1000;line-height:1}
+.sqCard .pos{position:absolute;left:7px;top:6px;font-size:9px;font-weight:800;opacity:.9}
+.sqCard .avatar{width:50px;height:50px;border-radius:50%;margin:17px auto 3px;display:grid;place-items:center;font-size:16px;font-weight:1000;color:#eaf6ff;background:radial-gradient(circle at 35% 28%,#6e91b9,#20334a 58%,#0b1420);border:1px solid #ffffff30;box-shadow:inset 0 0 18px #0006,0 4px 14px #0007}
+.sqCard.icon .avatar{color:#2b251d;background:radial-gradient(circle at 35% 28%,#fff,#dbcba7 55%,#9f8450);border-color:#ffffff85}
+.sqCard .name{font-size:10px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.sqCard .clubMini{font-size:7px;color:#b9c8d7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sqCard.icon .clubMini{color:#6d604c}
+.sqCard .chemDot{width:22px;height:22px;bottom:-12px;font-size:9px;font-weight:900;border-color:#4d7b9b;box-shadow:0 5px 12px #0008}
+.sqCard.selected{outline:2px solid #5ee2ff;box-shadow:0 10px 26px #000a,0 0 28px #4edaff70}
+.sqCard .miniFlag{position:absolute;left:7px;bottom:7px;font-size:10px;opacity:.95}
+.squadTools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.squadTools button{border-radius:14px;padding:10px 8px;border:1px solid #274a68;background:#0a1a2a;color:#dce9f5;font-weight:800}
+.squadTools button.primary{background:linear-gradient(180deg,#168ddb,#0a659f);border-color:#38bdf8;box-shadow:0 0 18px #149ef83d}
+.chemLegend{margin-top:10px;background:linear-gradient(180deg,#0a1b2b,#07131f);box-shadow:0 12px 28px #0006}
+.chemLegend .legendRow{font-size:11px}
+.playerDetail{margin-top:10px;border-radius:20px;border:1px solid #2b4c67;background:linear-gradient(135deg,#0c1c2d,#09141f 65%);padding:12px;display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:center;box-shadow:0 14px 32px #0006}
+.playerDetail .detailCard{height:132px;border-radius:18px;background:linear-gradient(150deg,#7b5a0b,#f2bd36 20%,#14171f 52%,#3a2805);border:1.5px solid #ffd965;display:grid;place-items:center;position:relative;overflow:hidden}
+.playerDetail .detailCard .bigAvatar{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,#7c9bc0,#243851 60%,#0c1622);font-weight:1000;font-size:19px}
+.playerDetail .detailCard b{position:absolute;right:8px;top:6px;font-size:22px}.playerDetail .detailCard small{position:absolute;left:8px;top:9px}
+.playerDetail h3{margin:0 0 4px;font-size:20px}.playerDetail .meta{font-size:10px;color:#9db1c5;margin-bottom:8px}.detailStats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.detailStats div{background:#081421;border:1px solid #1f3b55;border-radius:11px;padding:7px 4px;text-align:center}.detailStats small{display:block;color:#8fa5b9;font-size:8px}.detailStats b{font-size:14px}
+@media(max-width:390px){.sqCard{width:74px;height:108px}.sqCard .avatar{width:44px;height:44px}.sqCard .name{font-size:9px}.field{height:620px}.playerDetail{grid-template-columns:88px 1fr}}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+<section id="home" class="screen active">
+  <div class="top">
+    <div class="user"><div class="crest">⚽</div><div><b>KSA10</b><span class="sub">Rank 6 · 4/10</span></div></div>
+    <div class="wallet"><span>🪙 <b id="coins">12,500</b></span><span>💎 1,250</span></div>
+  </div>
+  <div class="hero">
+    <div class="eyebrow">CLUB WARS</div>
+    <h1>العب الآن</h1><h2>اخض معركة البطاقات</h2>
+    <p>11 لاعبًا. 11 جولة. اختيارات سرية. استخدم بطاقاتك بذكاء قبل أن تنفد.</p>
+    <button class="goldBtn" onclick="go('battle');resetBattle()">ابدأ المعركة</button>
+    <div class="heroCard"><div class="rating">96</div><div class="pos">ST</div><div class="portrait">🧔🏻‍♂️</div><div class="pname">Ronaldo</div><div class="sub" style="color:#ffe594">النصر · البرتغال</div></div>
+  </div>
+  <div class="quickGrid">
+    <div class="qtile blue" onclick="go('squad')"><div class="ico">🧪</div><b>إدارة التشكيلة</b><p>4-3-3 · كيمياء صارمة</p></div>
+    <div class="qtile gold" onclick="go('packs')"><div class="ico">🎁</div><b>البكجات</b><p>Gold · Premium · Elite</p></div>
+    <div class="qtile purple" onclick="go('sbc')"><div class="ico">🛡️</div><b>تحديات SBC</b><p>جوائز أقوى = متطلبات أصعب</p></div>
+    <div class="qtile blue" onclick="go('tasks')"><div class="ico">✅</div><b>المهام اليومية</b><p>تتجدد كل يوم</p></div>
+    <div class="qtile" onclick="go('market')"><div class="ico">🛒</div><b>السوق</b><p>بيع وشراء بأسعار محددة</p></div>
+    <div class="qtile gold" onclick="go('rank')"><div class="ico">🏆</div><b>الرانك</b><p>Rank 10 → Rank 1</p></div>
+  </div>
+  <div class="banner" onclick="go('tasks')">
+    <div><h3>Team of the Week</h3><p>بطاقات محدودة حتى الخميس 23:59</p></div><div style="font-size:42px">🔥</div>
+  </div>
+</section>
+
+<section id="squad" class="screen">
+  <div class="backTitle"><h1>إدارة التشكيلة</h1><button class="back" onclick="go('home')">‹</button></div>
+  <div class="statsStrip">
+    <div class="statBox"><small>الخطة</small><b>4-3-3</b></div>
+    <div class="statBox"><small>OVR</small><b>92</b></div>
+    <div class="statBox chem"><small>الكيمياء</small><b>29/33</b></div>
+  </div>
+  <div class="squadTools">
+    <button class="primary">⚙️ تغيير الخطة</button>
+    <button>💾 التشكيلات المحفوظة</button>
+  </div>
+  <div class="field" id="field">
+    <svg class="chemSvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <!-- الهجوم -->
+      <line class="good" x1="18" y1="18" x2="50" y2="16"/>
+      <!-- لا رابط بين ST و RW لاختلاف الدوري والجنسية: لا خط -->
+      <!-- الوسط -->
+      <line class="good" x1="24" y1="46" x2="50" y2="44"/>
+      <line class="mid" x1="50" y1="44" x2="76" y2="46"/>
+      <!-- من الوسط للدفاع -->
+      <line class="good" x1="24" y1="46" x2="36" y2="72"/>
+      <line class="good" x1="50" y1="44" x2="36" y2="72"/>
+      <line class="good" x1="50" y1="44" x2="64" y2="72"/>
+      <line class="good" x1="76" y1="46" x2="64" y2="72"/>
+      <!-- الدفاع -->
+      <line class="good" x1="12" y1="74" x2="36" y2="72"/>
+      <line class="good" x1="36" y1="72" x2="64" y2="72"/>
+      <line class="mid" x1="64" y1="72" x2="88" y2="74"/>
+      <!-- الحارس -->
+      <line class="good" x1="36" y1="72" x2="50" y2="91"/>
+      <line class="good" x1="64" y1="72" x2="50" y2="91"/>
+    </svg>
+
+    <div class="sqCard" style="left:18%;top:18%" onclick="selectSquadCard(this,'Vinícius','LW',92,'ريال مدريد','🇧🇷',[95,40,86,98])"><div class="rating">92</div><div class="pos">LW</div><div class="avatar">VJ</div><div class="name">Vinícius</div><div class="clubMini">ريال مدريد</div><div class="miniFlag">🇧🇷</div><div class="chemDot">3</div></div>
+    <div class="sqCard selected" style="left:50%;top:16%" onclick="selectSquadCard(this,'Ronaldo','ST',96,'النصر','🇵🇹',[96,32,84,93])"><div class="rating">96</div><div class="pos">ST</div><div class="avatar">CR</div><div class="name">Ronaldo</div><div class="clubMini">النصر</div><div class="miniFlag">🇵🇹</div><div class="chemDot">1</div></div>
+    <div class="sqCard special" style="left:82%;top:18%" onclick="selectSquadCard(this,'Salah','RW',91,'ليفربول','🇪🇬',[92,45,84,90])"><div class="rating">91</div><div class="pos">RW</div><div class="avatar">MS</div><div class="name">Salah</div><div class="clubMini">ليفربول</div><div class="miniFlag">🇪🇬</div><div class="chemDot">2</div></div>
+
+    <div class="sqCard" style="left:24%;top:46%" onclick="selectSquadCard(this,'Bellingham','CM',93,'ريال مدريد','🇬🇧',[87,82,90,88])"><div class="rating">93</div><div class="pos">CM</div><div class="avatar">JB</div><div class="name">Bellingham</div><div class="clubMini">ريال مدريد</div><div class="miniFlag">🇬🇧</div><div class="chemDot">3</div></div>
+    <div class="sqCard special" style="left:50%;top:44%" onclick="selectSquadCard(this,'De Bruyne','CM',92,'مانشستر سيتي','🇧🇪',[82,70,93,85])"><div class="rating">92</div><div class="pos">CM</div><div class="avatar">KD</div><div class="name">De Bruyne</div><div class="clubMini">مانشستر سيتي</div><div class="miniFlag">🇧🇪</div><div class="chemDot">2</div></div>
+    <div class="sqCard icon" style="left:76%;top:46%" onclick="selectSquadCard(this,'Modrić','CM',94,'ICON','🇭🇷',[80,79,96,90])"><div class="rating">94</div><div class="pos">CM</div><div class="avatar">LM</div><div class="name">Modrić</div><div class="clubMini">ICON</div><div class="miniFlag">🇭🇷</div><div class="chemDot">2</div></div>
+
+    <div class="sqCard" style="left:12%;top:74%" onclick="selectSquadCard(this,'Theo','LB',89,'ميلان','🇫🇷',[82,86,79,93])"><div class="rating">89</div><div class="pos">LB</div><div class="avatar">TH</div><div class="name">Theo</div><div class="clubMini">ميلان</div><div class="miniFlag">🇫🇷</div><div class="chemDot">1</div></div>
+    <div class="sqCard" style="left:36%;top:72%" onclick="selectSquadCard(this,'Van Dijk','CB',91,'ليفربول','🇳🇱',[78,94,80,82])"><div class="rating">91</div><div class="pos">CB</div><div class="avatar">VD</div><div class="name">Van Dijk</div><div class="clubMini">ليفربول</div><div class="miniFlag">🇳🇱</div><div class="chemDot">2</div></div>
+    <div class="sqCard special" style="left:64%;top:72%" onclick="selectSquadCard(this,'Rüdiger','CB',92,'ريال مدريد','🇩🇪',[73,94,77,85])"><div class="rating">92</div><div class="pos">CB</div><div class="avatar">AR</div><div class="name">Rüdiger</div><div class="clubMini">ريال مدريد</div><div class="miniFlag">🇩🇪</div><div class="chemDot">3</div></div>
+    <div class="sqCard" style="left:88%;top:74%" onclick="selectSquadCard(this,'Hakimi','RB',89,'باريس','🇲🇦',[80,85,83,92])"><div class="rating">89</div><div class="pos">RB</div><div class="avatar">AH</div><div class="name">Hakimi</div><div class="clubMini">باريس</div><div class="miniFlag">🇲🇦</div><div class="chemDot">1</div></div>
+    <div class="sqCard" style="left:50%;top:91%" onclick="selectSquadCard(this,'Alisson','GK',90,'ليفربول','🇧🇷',[48,92,82,78])"><div class="rating">90</div><div class="pos">GK</div><div class="avatar">AB</div><div class="name">Alisson</div><div class="clubMini">ليفربول</div><div class="miniFlag">🇧🇷</div><div class="chemDot">2</div></div>
+  </div>
+
+  <div class="playerDetail" id="playerDetail">
+    <div class="detailCard"><b id="detailOvr">96</b><small id="detailPos">ST</small><div class="bigAvatar" id="detailAvatar">CR</div></div>
+    <div><h3 id="detailName">Ronaldo</h3><div class="meta" id="detailMeta">النصر · 🇵🇹 · كيمياء 1/3</div><div class="detailStats"><div><small>هجوم</small><b id="da">96</b></div><div><small>دفاع</small><b id="dd">32</b></div><div><small>صناعة</small><b id="dp">84</b></div><div><small>مهارة</small><b id="ds">93</b></div></div></div>
+  </div>
+
+  <div class="chemLegend">
+    <h3>الكيمياء الصارمة</h3>
+    <div class="legendRow"><span class="dotc" style="background:#36df7f"></span> نفس النادي أو نفس الدوري: رابط كامل.</div>
+    <div class="legendRow"><span class="dotc" style="background:#f1be37"></span> دوري مختلف لكن نفس الجنسية: رابط جنسية فقط.</div>
+    <div class="legendRow"><span class="dotc" style="background:#5a6772"></span> دوري وجنسية مختلفان: لا يظهر أي رابط.</div>
+    <div class="legendRow">✨ وجود 3 Icons أو أكثر يعطي +1 كيمياء فقط، ولا يرفع الصفات.</div>
+  </div>
+</section>
+
+<section id="battle" class="screen">
+  <div class="top">
+    <div class="user"><div class="crest">⚽</div><div><b>KSA10</b><span class="sub">Ranked</span></div></div>
+    <button class="back" onclick="go('home')">×</button>
+  </div>
+  <div class="battleTop">
+    <div class="team"><b>KSA10</b><div class="sub">أنت</div></div>
+    <div class="battleScore"><span id="myscore">0</span> - <span id="opscore">0</span></div>
+    <div class="team"><b>AbuSaud</b><div class="sub">Rank 5</div></div>
+  </div>
+  <div class="roundTrack" id="roundTrack"></div>
+  <div class="enemyRow" id="enemyRow"></div>
+  <div class="secret" id="secret">اختر لاعبك أولًا، ثم اختر الصفة من بطاقته.</div>
+  <div class="duel">
+    <div>
+      <div id="myBig" class="big"><div class="bface">👆</div><div class="bn">اختر بطاقة</div></div>
+      <div class="attrGrid" id="attrs"></div>
+      <button id="lockBtn" class="blueBtn confirm" onclick="lockChoice()" disabled>تثبيت الاختيار</button>
+    </div>
+    <div class="vs">VS</div>
+    <div id="enemyBig" class="big enemy"><div class="bface">❓</div><div class="bn">بطاقة الخصم</div><div class="sub">مخفية حتى الكشف</div></div>
+  </div>
+  <div class="sectionTitle"><h2>بطاقاتك المتبقية</h2><span class="sub"><span id="leftCount">11</span> لاعبين</span></div>
+  <div class="myDeck" id="myDeck"></div>
+</section>
+
+<section id="market" class="screen">
+  <div class="backTitle"><h1>السوق</h1><button class="back" onclick="go('home')">‹</button></div>
+  <div class="seg"><button class="active">شراء</button><button>بيع</button><button>مفضلة</button><button>متابعة</button></div>
+  <div class="searchbar" style="margin-top:10px"><input placeholder="ابحث عن لاعب..."><button class="filterBtn">☷</button></div>
+  <div class="marketList" id="marketList"></div>
+</section>
+
+<section id="packs" class="screen">
+  <div class="backTitle"><h1>البكجات</h1><button class="back" onclick="go('home')">‹</button></div>
+  <div class="packHero"><div><span class="sub">لفترة محدودة</span><h2>بكج نجوم الأسبوع</h2><p class="sub">فرصة مرتفعة لبطاقات TOTW والنجوم.</p><button class="goldBtn">فتح بـ 25,000 🪙</button></div><div class="packObj">🎴</div></div>
+  <div class="packGrid">
+    <div class="pack"><div class="art">🟨</div><h3>Gold Pack</h3><p class="sub">5 لاعبين · مضمون 75+</p><b>5,000 🪙</b></div>
+    <div class="pack"><div class="art">💎</div><h3>Premium</h3><p class="sub">5 لاعبين · مضمون 84+</p><b>15,000 🪙</b></div>
+    <div class="pack"><div class="art">👑</div><h3>Elite</h3><p class="sub">5 لاعبين · مضمون 88+</p><b>35,000 🪙</b></div>
+    <div class="pack"><div class="art">🏛️</div><h3>Historic/Icon</h3><p class="sub">بطاقة تاريخية نادرة</p><b>150,000 🪙</b></div>
+  </div>
+</section>
+
+<section id="sbc" class="screen">
+  <div class="backTitle"><h1>تحديات SBC</h1><button class="back" onclick="go('home')">‹</button></div>
+  <div class="sbcTabs"><button class="active">لاعبين</button><button>ترقية</button><button>يومية</button><button>أحداث</button></div>
+  <div class="sbcHero"><div><div class="sub">بطاقة خارقة · 6 أيام</div><h2>Ronaldo Historic 98</h2><p class="sub">الجائزة قوية، لذلك يتطلب التحدي عدة تشكيلات صعبة.</p><button class="goldBtn">ابدأ التحدي</button></div><div class="sbcCard">🧔🏻‍♂️</div></div>
+  <div class="req">
+    <div class="rr"><span>التشكيلة 1</span><b>OVR 86+</b></div>
+    <div class="rr"><span>التشكيلة 2</span><b>OVR 88+ · TOTW ×1</b></div>
+    <div class="rr"><span>التشكيلة 3</span><b>OVR 90+ · كيمياء 27+</b></div>
+    <div class="rr"><span>التشكيلة 4</span><b>OVR 91+ · ريال مدريد ×2</b></div>
+    <div class="rr"><span>التشكيلة 5</span><b>OVR 92+ · بطاقتان خاصتان</b></div>
+    <div class="rr"><span>التشكيلة 6</span><b>OVR 93+ · Icon ×1</b></div>
+  </div>
+</section>
+
+<section id="tasks" class="screen">
+  <div class="backTitle"><h1>المهام</h1><button class="back" onclick="go('home')">‹</button></div>
+  <div class="tasksHead"><div class="sub">تتحدث كل يوم عند 00:00</div><h2>مهام اليوم</h2><p class="sub">أكملها لتحافظ اللعبة على تقدم يومي مستمر.</p></div>
+  <div class="task"><div class="taskTop"><b>اربح مباراة واحدة</b><span>0/1</span></div><div class="progress"><i style="width:0%"></i></div><p class="sub">الجائزة: 750 🪙</p></div>
+  <div class="task"><div class="taskTop"><b>اكسب 4 جولات باستخدام الهجوم</b><span>2/4</span></div><div class="progress"><i style="width:50%"></i></div><p class="sub">الجائزة: 500 🪙</p></div>
+  <div class="task"><div class="taskTop"><b>استخدم لاعبين من 3 دوريات</b><span>2/3</span></div><div class="progress"><i style="width:67%"></i></div><p class="sub">الجائزة: 400 🪙</p></div>
+  <div class="task"><div class="taskTop"><b>أكمل SBC واحد</b><span>0/1</span></div><div class="progress"><i style="width:0%"></i></div><p class="sub">الجائزة: Gold Pack</p></div>
+  <div class="banner"><div><h3>مكافأة جميع المهام</h3><p>أكمل مهام اليوم كاملة.</p></div><b>🎁 Premium Pack</b></div>
+</section>
+
+<section id="rank" class="screen">
+  <div class="backTitle"><h1>نظام الرانك</h1><button class="back" onclick="go('home')">‹</button></div>
+  <div class="rankHero"><div class="rankShield">🏆</div><h1>Rank 6</h1><p class="sub">4 من 10 مباريات نحو Rank 5</p><div class="rankSteps"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span></div><p>🔥 سلسلة انتصارات: <b>2</b></p></div>
+  <div class="sectionTitle"><h2>الجوائز الأسبوعية</h2><span class="sub">حسب الرانك عند نهاية الأسبوع</span></div>
+  <div class="rewardList">
+    <div class="reward"><div>10–8</div><div><b>Gold Pack</b><div class="sub">بكجات عادية</div></div><span>🟨</span></div>
+    <div class="reward"><div>7–5</div><div><b>Gold + Premium</b><div class="sub">جوائز متوسطة</div></div><span>🎁</span></div>
+    <div class="reward"><div>4–3</div><div><b>Premium Packs</b><div class="sub">بدون بكجات خارقة</div></div><span>💎</span></div>
+    <div class="reward strong"><div>2</div><div><b>Elite Pack + Coins</b><div class="sub">بداية الجوائز القوية</div></div><span>👑</span></div>
+    <div class="reward strong"><div>1</div><div><b>Ultimate + Elite</b><div class="sub">أقوى جوائز الرانك</div></div><span>🏆</span></div>
+  </div>
+</section>
+
+<nav class="bottom">
+  <button id="nav-home" class="active" onclick="go('home')"><span class="bi">⌂</span>الرئيسية</button>
+  <button id="nav-squad" onclick="go('squad')"><span class="bi">♟</span>التشكيلة</button>
+  <button id="nav-battle" onclick="go('battle');resetBattle()"><span class="bi">⚽</span>العب</button>
+  <button id="nav-market" onclick="go('market')"><span class="bi">🛒</span>السوق</button>
+  <button id="nav-packs" onclick="go('packs')"><span class="bi">🎴</span>البكجات</button>
+</nav>
+
+<div class="modal" id="endModal">
+  <div class="sheet">
+    <h2 id="endTitle">انتهت المباراة</h2>
+    <div class="resultScore"><span id="endMe">0</span> - <span id="endOp">0</span></div>
+    <p id="endReward" style="text-align:center;color:#b7c7d7"></p>
+    <button class="goldBtn" style="width:100%" onclick="closeModal();resetBattle()">إعادة المباراة</button>
+    <button class="ghostBtn" style="width:100%;margin-top:8px" onclick="closeModal();go('home')">العودة للرئيسية</button>
+  </div>
+</div>
+</div>
+
+<script>
+const players=[
+ {n:"Ronaldo",f:"🧔🏻‍♂️",club:"النصر",ovr:96,pos:"ST",a:96,d:32,p:84,s:93},
+ {n:"Vinícius",f:"👨🏾",club:"ريال مدريد",ovr:95,pos:"LW",a:95,d:40,p:86,s:98},
+ {n:"Bellingham",f:"👨🏾",club:"ريال مدريد",ovr:93,pos:"CM",a:87,d:82,p:90,s:88},
+ {n:"Salah",f:"🧔🏽",club:"ليفربول",ovr:92,pos:"RW",a:92,d:45,p:84,s:90},
+ {n:"De Bruyne",f:"👨🏻",club:"مانشستر سيتي",ovr:92,pos:"CM",a:82,d:70,p:93,s:85},
+ {n:"Van Dijk",f:"👨🏽",club:"ليفربول",ovr:91,pos:"CB",a:78,d:94,p:80,s:82},
+ {n:"Alisson",f:"🧤",club:"ليفربول",ovr:90,pos:"GK",a:48,d:92,p:82,s:78},
+ {n:"Hakimi",f:"👨🏽",club:"باريس",ovr:89,pos:"RB",a:80,d:85,p:83,s:92},
+ {n:"Modrić",f:"👨🏼",club:"ICON",ovr:94,pos:"CM",a:80,d:79,p:96,s:90},
+ {n:"Rüdiger",f:"👨🏿",club:"ريال مدريد",ovr:92,pos:"CB",a:73,d:94,p:77,s:85},
+ {n:"Theo",f:"👨🏻",club:"ميلان",ovr:89,pos:"LB",a:82,d:86,p:79,s:93}
+];
+const enemies=[
+ {n:"Maldini",f:"🧔🏻",club:"ICON",ovr:98,pos:"CB",a:70,d:98,p:85,s:82},
+ {n:"Messi",f:"🧔🏻",club:"ميامي",ovr:97,pos:"RW",a:94,d:35,p:98,s:99},
+ {n:"Haaland",f:"👱🏻",club:"مانشستر سيتي",ovr:96,pos:"ST",a:99,d:42,p:76,s:88},
+ {n:"Rodri",f:"👨🏻",club:"مانشستر سيتي",ovr:94,pos:"CDM",a:78,d:94,p:95,s:82},
+ {n:"Kane",f:"👨🏻",club:"بايرن",ovr:94,pos:"ST",a:97,d:48,p:88,s:80},
+ {n:"Leão",f:"👨🏾",club:"ميلان",ovr:92,pos:"LW",a:90,d:38,p:82,s:97},
+ {n:"Dias",f:"👨🏻",club:"مانشستر سيتي",ovr:92,pos:"CB",a:65,d:95,p:80,s:77},
+ {n:"Pedri",f:"👨🏻",club:"برشلونة",ovr:91,pos:"CM",a:76,d:72,p:95,s:90},
+ {n:"Ter Stegen",f:"🧤",club:"برشلونة",ovr:91,pos:"GK",a:35,d:95,p:86,s:70},
+ {n:"Valverde",f:"👨🏻",club:"ريال مدريد",ovr:91,pos:"CM",a:84,d:86,p:89,s:90},
+ {n:"Osimhen",f:"👨🏿",club:"نابولي",ovr:91,pos:"ST",a:94,d:43,p:74,s:91}
+];
+const attrMeta={a:["هجوم","⚔️"],d:["دفاع","🛡️"],p:["صناعة","🎯"],s:["مهارة","⚡"]};
+let S={round:1,me:0,op:0,used:[],eused:[],sel:null,attr:null};
+
+function go(id){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
+ let nav=document.getElementById("nav-"+(id==="sbc"||id==="tasks"||id==="rank"?"home":id));
+ if(nav) nav.classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function bigCard(p,enemy=false){
+ return `<div class="br">${p.ovr}</div><div class="bp">${p.pos}</div><div class="bface">${p.f}</div><div class="bn">${p.n}</div><div class="bclub">${p.club}</div>`;
+}
+function renderBattle(){
+ document.getElementById("myscore").textContent=S.me;
+ document.getElementById("opscore").textContent=S.op;
+ document.getElementById("roundTrack").innerHTML=Array.from({length:11},(_,i)=>`<div class="roundBubble ${i<S.round-1?"done":""} ${i===S.round-1?"now":""}">${i+1}</div>`).join("");
+ document.getElementById("enemyRow").innerHTML=enemies.map((_,i)=>`<div class="enemyMini ${S.eused.includes(i)?"used":""}">?</div>`).join("");
+ document.getElementById("leftCount").textContent=11-S.used.length;
+ document.getElementById("myDeck").innerHTML=players.map((p,i)=>`<div class="deckCard ${S.used.includes(i)?"used":""} ${S.sel===i?"sel":""}" onclick="pick(${i})"><div class="df">${p.f}</div><b>${p.n}</b><span class="sub">${p.ovr} · ${p.pos}</span></div>`).join("");
+ const mb=document.getElementById("myBig"),attrs=document.getElementById("attrs"),lock=document.getElementById("lockBtn");
+ if(S.sel===null){mb.innerHTML='<div class="bface">👆</div><div class="bn">اختر بطاقة</div>';attrs.innerHTML="";lock.disabled=true}
+ else{
+  const p=players[S.sel];mb.innerHTML=bigCard(p);
+  attrs.innerHTML=Object.keys(attrMeta).map(k=>`<button class="attr ${S.attr===k?"selected":""}" onclick="chooseAttr('${k}')">${attrMeta[k][1]} ${attrMeta[k][0]} <b>${p[k]}</b></button>`).join("");
+  lock.disabled=!S.attr;
+ }
+ document.getElementById("enemyBig").className="big enemy";
+ document.getElementById("enemyBig").innerHTML='<div class="bface">❓</div><div class="bn">بطاقة الخصم</div><div class="sub">مخفية حتى الكشف</div>';
+}
+function resetBattle(){
+ S={round:1,me:0,op:0,used:[],eused:[],sel:null,attr:null};
+ document.getElementById("secret").textContent="اختر لاعبك أولًا، ثم اختر الصفة من بطاقته.";
+ renderBattle();
+}
+function pick(i){if(S.used.includes(i))return;S.sel=i;S.attr=null;renderBattle()}
+function chooseAttr(k){S.attr=k;renderBattle()}
+function enemyPick(){
+ const free=enemies.map((_,i)=>i).filter(i=>!S.eused.includes(i));
+ const i=free[Math.floor(Math.random()*free.length)];
+ const keys=["a","d","p","s"].sort((x,y)=>enemies[i][y]-enemies[i][x]);
+ const k=Math.random()<.8?keys[Math.floor(Math.random()*2)]:keys[Math.floor(Math.random()*4)];
+ return [i,k];
+}
+function lockChoice(){
+ if(S.sel===null||!S.attr)return;
+ document.getElementById("lockBtn").disabled=true;
+ const [ei,ea]=enemyPick(),me=players[S.sel],op=enemies[ei];
+ document.getElementById("secret").innerHTML=`الخصم اختار <b>${attrMeta[ea][1]} ${attrMeta[ea][0]}</b> · شعار <b>${op.club}</b><br><span class="sub">اسم اللاعب والرقم لا يظهران إلا بعد الكشف</span>`;
+ setTimeout(()=>{
+   const eb=document.getElementById("enemyBig"); eb.className="big "+(op.club==="ICON"?"icon":"enemy"); eb.innerHTML=bigCard(op,true);
+   const mv=me[S.attr],ov=op[ea];
+   let msg="";
+   if(mv>ov){S.me++;msg="✅ النقطة لك"}
+   else if(ov>mv){S.op++;msg="❌ النقطة للخصم"}
+   else{S.me++;S.op++;msg="🤝 تعادل: نقطة لكل فريق"}
+   document.getElementById("myscore").textContent=S.me;document.getElementById("opscore").textContent=S.op;
+   document.getElementById("secret").innerHTML=`${me.n} · ${attrMeta[S.attr][0]} <b>${mv}</b> &nbsp; VS &nbsp; ${op.n} · ${attrMeta[ea][0]} <b>${ov}</b><br><b style="color:#ffdc74">${msg}</b>`;
+   S.used.push(S.sel);S.eused.push(ei);
+   if(S.round===11){setTimeout(endBattle,950);return}
+   S.round++;S.sel=null;S.attr=null;
+   setTimeout(()=>{renderBattle();document.getElementById("secret").textContent="الجولة التالية: اختر لاعبًا جديدًا ثم الصفة.";},1100);
+ },900);
+}
+function endBattle(){
+ document.getElementById("endMe").textContent=S.me;document.getElementById("endOp").textContent=S.op;
+ let t="",r="",coins=parseInt(document.getElementById("coins").textContent.replace(",",""));
+ if(S.me>S.op){t="🏆 فوز";r="500 Coins + تقدم مباراة واحدة في الرانك";coins+=500}
+ else if(S.me===S.op){t="🤝 تعادل";r="350 Coins لكل لاعب · لا تقدم ولا تراجع";coins+=350}
+ else{t="خسارة";r="0 Coins · تتراجع مباراة واحدة في الرانك"}
+ document.getElementById("endTitle").textContent=t;document.getElementById("endReward").textContent=r;document.getElementById("coins").textContent=coins.toLocaleString();document.getElementById("endModal").classList.add("show");
+}
+function closeModal(){document.getElementById("endModal").classList.remove("show")}
+const marketData=[
+ ["Ronaldo","🧔🏻‍♂️",96,"ST","120,000"],["Haaland","👱🏻",96,"ST","110,000"],["Bellingham","👨🏾",93,"CM","72,000"],
+ ["Vinícius","👨🏾",95,"LW","95,000"],["Salah","🧔🏽",92,"RW","68,000"],["Van Dijk","👨🏽",91,"CB","55,000"]
+];
+document.getElementById("marketList").innerHTML=marketData.map(x=>`<div class="marketCard"><div class="thumb"><span>${x[2]}</span>${x[1]}</div><div><b>${x[0]}</b><div class="sub">${x[3]} · بطاقة قابلة للبيع</div></div><div class="price">${x[4]} 🪙</div></div>`).join("");
+
+function selectSquadCard(el,name,pos,ovr,club,flag,stats){
+  document.querySelectorAll('#squad .sqCard').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const initials=name.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('detailName').textContent=name;
+  document.getElementById('detailPos').textContent=pos;
+  document.getElementById('detailOvr').textContent=ovr;
+  document.getElementById('detailAvatar').textContent=initials;
+  document.getElementById('detailMeta').textContent=`${club} · ${flag} · كيمياء ${el.querySelector('.chemDot').textContent}/3`;
+  document.getElementById('da').textContent=stats[0];
+  document.getElementById('dd').textContent=stats[1];
+  document.getElementById('dp').textContent=stats[2];
+  document.getElementById('ds').textContent=stats[3];
+}
+
+resetBattle();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
