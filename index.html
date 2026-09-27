@@ -525,5 +525,29 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
+<script type="module" id="firebase-bootstrap">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAnalytics, isSupported as analyticsSupported } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBRt7L-kvLCYftrZ2eYENnLp3cWd0T-vYk",
+    authDomain: "club-war.firebaseapp.com",
+    projectId: "club-war",
+    storageBucket: "club-war.firebasestorage.app",
+    messagingSenderId: "419334333586",
+    appId: "1:419334333586:web:3937fac1992a424c5c724b",
+    measurementId: "G-PND8XNN806"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  if (await analyticsSupported()) {
+    getAnalytics(app);
+  }
+
+  window.clubWarsFirebase = { app, firebaseConfig };
+  window.dispatchEvent(new CustomEvent("clubwars:firebase-ready"));
+</script>
+
 </body>
 </html>
