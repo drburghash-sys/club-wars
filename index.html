@@ -225,6 +225,33 @@ body{display:flex;justify-content:center}
 .roomMeta{font-size:10px;color:#9fb2c4;margin-top:3px}
 .roomLeave{margin-top:8px;width:100%}
 
+
+/* ===== V4 Club System ===== */
+.chemSvg .green{stroke:#31e985}.chemSvg .orange{stroke:#f29d17}.chemSvg .red{stroke:#e24455}
+.slotEmpty{
+  width:76px;height:108px;position:absolute;z-index:2;transform:translate(-50%,-50%);
+  border:1.5px dashed #ffffff35;border-radius:18px;display:grid;place-items:center;
+  color:#ffffff55;font-size:10px;background:#06170d55
+}
+.slotEmpty.selectedTarget{border-color:#5ee2ff;box-shadow:0 0 22px #4edaff55}
+.benchWrap{margin:10px 0 12px;padding:11px;border:1px solid #23445f;border-radius:18px;background:#081624}
+.benchTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.benchGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.benchSlot{min-height:92px;border:1px dashed #31516c;border-radius:13px;background:#07121d;display:grid;place-items:center;padding:4px;text-align:center;color:#688198;font-size:9px}
+.benchSlot.has{border-style:solid;border-color:#31516c;color:#fff;background:#0b1a28}
+.benchSlot.sel{outline:2px solid #5ee2ff;box-shadow:0 0 18px #4edaff45}
+.benchFace{font-size:28px}.benchSlot b{font-size:9px;display:block}.benchSlot small{font-size:8px;color:#91a5b8}
+.squadHint{margin:8px 0 0;font-size:10px;color:#9db1c5;text-align:center}
+.starterOverlay{position:fixed;inset:0;z-index:200;background:#020811f3;display:none;align-items:center;justify-content:center;padding:18px}
+.starterOverlay.show{display:flex}
+.starterSheet{width:min(100%,480px);max-height:88dvh;overflow:auto;border-radius:26px;padding:18px;background:linear-gradient(160deg,#0d2033,#07111c);border:1px solid #35536d;box-shadow:0 30px 80px #000}
+.starterSheet h2{margin:0 0 6px;color:#ffe07a}.starterSheet p{font-size:11px;color:#aebfd0;line-height:1.7}
+.nationGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}
+.nationPack{border:1px solid #38526c;border-radius:17px;padding:14px 8px;background:linear-gradient(145deg,#10243a,#091522);color:#fff;text-align:center}
+.nationPack .flag{font-size:35px;display:block}.nationPack b{display:block;margin-top:4px}.nationPack small{font-size:9px;color:#8fa4b8}
+.toastV4{position:fixed;z-index:250;left:50%;bottom:92px;transform:translateX(-50%);background:#0a1b2b;border:1px solid #355875;color:#fff;padding:10px 14px;border-radius:13px;box-shadow:0 12px 28px #0009;display:none;font-size:11px;max-width:88%;text-align:center}
+.toastV4.show{display:block}
+
 </style>
 </head>
 <body>
@@ -239,7 +266,7 @@ body{display:flex;justify-content:center}
     <div class="eyebrow">CLUB WARS</div>
     <h1>العب الآن</h1><h2>اخض معركة البطاقات</h2>
     <p>11 لاعبًا. 11 جولة. اختيارات سرية. استخدم بطاقاتك بذكاء قبل أن تنفد.</p>
-    <button class="goldBtn" onclick="go('battle');resetBattle()">ابدأ المعركة</button>
+    <button class="goldBtn" onclick="go('battle');prepareBattle()">ابدأ المعركة</button>
     <div class="heroCard"><div class="rating">96</div><div class="pos">ST</div><div class="portrait">🧔🏻‍♂️</div><div class="pname">Ronaldo</div><div class="sub" style="color:#ffe594">النصر · البرتغال</div></div>
   </div>
   <div class="quickGrid">
@@ -310,9 +337,9 @@ body{display:flex;justify-content:center}
 
   <div class="chemLegend">
     <h3>الكيمياء الصارمة</h3>
-    <div class="legendRow"><span class="dotc" style="background:#36df7f"></span> نفس النادي أو نفس الدوري: رابط كامل.</div>
-    <div class="legendRow"><span class="dotc" style="background:#f1be37"></span> دوري مختلف لكن نفس الجنسية: رابط جنسية فقط.</div>
-    <div class="legendRow"><span class="dotc" style="background:#5a6772"></span> دوري وجنسية مختلفان: لا يظهر أي رابط.</div>
+    <div class="legendRow"><span class="dotc" style="background:#31e985"></span> أخضر: نفس النادي، أو نفس الدوري والجنسية معًا.</div>
+    <div class="legendRow"><span class="dotc" style="background:#f29d17"></span> برتقالي: نفس الدوري فقط، أو نفس الجنسية مع دوري مختلف.</div>
+    <div class="legendRow"><span class="dotc" style="background:#e24455"></span> أحمر: لا نفس دوري ولا نفس جنسية — بدون تناغم.</div>
     <div class="legendRow">✨ وجود 3 Icons أو أكثر يعطي +1 كيمياء فقط، ولا يرفع الصفات.</div>
   </div>
 </section>
@@ -346,9 +373,9 @@ body{display:flex;justify-content:center}
     </div>
   </div>
   <div class="battleTop">
-    <div class="team"><b>KSA10</b><div class="sub">أنت</div></div>
+    <div class="team"><b id="myBattleName">أنت</b><div class="sub" id="myBattleSub">متصل</div></div>
     <div class="battleScore"><span id="myscore">0</span> - <span id="opscore">0</span></div>
-    <div class="team"><b>AbuSaud</b><div class="sub">Rank 5</div></div>
+    <div class="team"><b id="opBattleName">بانتظار خصم</b><div class="sub" id="opBattleSub">أنشئ غرفة أو أدخل رمزًا</div></div>
   </div>
   <div class="roundTrack" id="roundTrack"></div>
   <div class="enemyRow" id="enemyRow"></div>
@@ -424,10 +451,21 @@ body{display:flex;justify-content:center}
 <nav class="bottom">
   <button id="nav-home" class="active" onclick="go('home')"><span class="bi">⌂</span>الرئيسية</button>
   <button id="nav-squad" onclick="go('squad')"><span class="bi">♟</span>التشكيلة</button>
-  <button id="nav-battle" onclick="go('battle');resetBattle()"><span class="bi">⚽</span>العب</button>
+  <button id="nav-battle" onclick="go('battle');prepareBattle()"><span class="bi">⚽</span>العب</button>
   <button id="nav-market" onclick="go('market')"><span class="bi">🛒</span>السوق</button>
   <button id="nav-packs" onclick="go('packs')"><span class="bi">🎴</span>البكجات</button>
 </nav>
+
+
+<div class="starterOverlay" id="starterOverlay">
+  <div class="starterSheet">
+    <div class="sub">بداية النادي</div>
+    <h2>ناديك فارغ تمامًا</h2>
+    <p>لا تملك أي لاعب. اختر <b>بكج بداية مجاني حسب الجنسية</b>؛ ستحصل على 11 لاعبًا ضعيفًا فقط لتكوين أول تشكيلة، وبعدها تبدأ تطوير النادي من البكجات والسوق والتحديات.</p>
+    <div class="nationGrid" id="nationGrid"></div>
+  </div>
+</div>
+<div class="toastV4" id="toastV4"></div>
 
 <div class="modal" id="endModal">
   <div class="sheet">
@@ -518,7 +556,7 @@ function lockChoice(){
    window.clubWarsOnline.lockSelection(S.sel,S.attr);
    return;
  }
- document.getElementById("lockBtn").disabled=true;
+ return;
  const [ei,ea]=enemyPick(),me=players[S.sel],op=enemies[ei];
  document.getElementById("secret").innerHTML=`الخصم اختار <b>${attrMeta[ea][1]} ${attrMeta[ea][0]}</b> · شعار <b>${op.club}</b><br><span class="sub">اسم اللاعب والرقم لا يظهران إلا بعد الكشف</span>`;
  setTimeout(()=>{
@@ -569,6 +607,220 @@ function selectSquadCard(el,name,pos,ovr,club,flag,stats){
 resetBattle();
 </script>
 
+<script id="club-v4-engine">
+const FORMATION_SLOTS=[
+ {key:"LW",role:"LW",x:18,y:18},{key:"ST",role:"ST",x:50,y:16},{key:"RW",role:"RW",x:82,y:18},
+ {key:"CM1",role:"CM",x:24,y:46},{key:"CM2",role:"CM",x:50,y:44},{key:"CM3",role:"CM",x:76,y:46},
+ {key:"LB",role:"LB",x:12,y:74},{key:"CB1",role:"CB",x:36,y:72},{key:"CB2",role:"CB",x:64,y:72},{key:"RB",role:"RB",x:88,y:74},
+ {key:"GK",role:"GK",x:50,y:91}
+];
+const CHEM_LINKS=[["LW","ST"],["ST","RW"],["CM1","CM2"],["CM2","CM3"],["CM1","CB1"],["CM2","CB1"],["CM2","CB2"],["CM3","CB2"],["LB","CB1"],["CB1","CB2"],["CB2","RB"],["CB1","GK"],["CB2","GK"]];
+const STARTER_NATIONS={
+ sa:{name:"السعودية",flag:"🇸🇦",names:["سالم","ريان","يزيد","ناصر","فهد","عمر","عبدالله","تركي","حسن","ماجد","وليد"]},
+ br:{name:"البرازيل",flag:"🇧🇷",names:["Lucas","Rafael","Bruno","Diego","Matheus","João","Caio","Renan","Felipe","André","Tiago"]},
+ ar:{name:"الأرجنتين",flag:"🇦🇷",names:["Mateo","Nico","Tomas","Lautaro","Franco","Lucas","Santi","Enzo","Julian","Facundo","Leo"]},
+ fr:{name:"فرنسا",flag:"🇫🇷",names:["Lucas","Theo","Hugo","Enzo","Noah","Rayan","Evan","Ilan","Léo","Maxime","Yanis"]},
+ en:{name:"إنجلترا",flag:"🏴",names:["Jack","James","Harry","Luke","Ben","Mason","Adam","Sam","Oliver","Leo","Ryan"]},
+ es:{name:"إسبانيا",flag:"🇪🇸",names:["Pablo","Diego","Hugo","Sergio","Mario","Dani","Álex","Iván","Adrián","Marco","Álvaro"]},
+ pt:{name:"البرتغال",flag:"🇵🇹",names:["João","Rui","Diogo","Tiago","Nuno","Pedro","Gonçalo","André","Bruno","Miguel","Rafael"]},
+ de:{name:"ألمانيا",flag:"🇩🇪",names:["Leon","Jonas","Felix","Lukas","Finn","Max","Paul","Elias","Noah","Tim","Julian"]}
+};
+window.clubState=null;
+window.squadSelection=null;
+
+function toastV4(msg){
+ const el=document.getElementById("toastV4"); if(!el)return;
+ el.textContent=msg; el.classList.add("show"); clearTimeout(window.__toastV4);
+ window.__toastV4=setTimeout(()=>el.classList.remove("show"),2200);
+}
+function makeStarterClub(code){
+ const n=STARTER_NATIONS[code]||STARTER_NATIONS.sa;
+ const roles=["LW","ST","RW","CM","CM","CM","LB","CB","CB","RB","GK"];
+ const secondary=[["RW","ST"],["LW","RW"],["LW","ST"],["CM"],["CM"],["CM"],["CB"],["LB"],["RB"],["CB"],[]];
+ const leagues=["الدوري A","الدوري A","الدوري B","الدوري B","الدوري C","الدوري A","الدوري C","الدوري A","الدوري B","الدوري C","الدوري A"];
+ const clubs=["نادي العاصمة","نادي الساحل","نادي النجوم","نادي الساحل","نادي الشرق","نادي العاصمة","نادي الغرب","نادي العاصمة","نادي النجوم","نادي الغرب","نادي الساحل"];
+ const baseOvr=[65,67,64,66,63,65,62,66,64,63,65];
+ const players=roles.map((pos,i)=>{
+   const ovr=baseOvr[i];
+   return {
+     id:code+"-"+(i+1)+"-"+Date.now(),n:n.names[i],f:pos==="GK"?"🧤":"👤",
+     nation:n.name,flag:n.flag,club:clubs[i],league:leagues[i],ovr,pos,sec:secondary[i],
+     a:Math.max(35,ovr+(pos==="ST"||pos==="LW"||pos==="RW"?5:-8)),
+     d:Math.max(35,ovr+(pos==="CB"||pos==="LB"||pos==="RB"||pos==="GK"?6:-10)),
+     p:Math.max(35,ovr+(pos==="CM"?5:-2)),
+     s:Math.max(35,ovr+(pos==="LW"||pos==="RW"?6:0)),type:"base"
+   };
+ });
+ const lineup={}; FORMATION_SLOTS.forEach((s,i)=>lineup[s.key]=players[i].id);
+ return {starterNation:code,createdAt:Date.now(),players,lineup,bench:[null,null,null,null,null,null,null],formation:"4-3-3"};
+}
+function playerById(id){return window.clubState?.players?.find(p=>p.id===id)||null}
+function slotByKey(k){return FORMATION_SLOTS.find(s=>s.key===k)}
+function playerFits(player,role){
+ if(!player)return true;
+ return player.pos===role || (Array.isArray(player.sec)&&player.sec.includes(role));
+}
+function linkColor(a,b){
+ if(!a||!b)return "red";
+ const sameClub=a.club===b.club;
+ const sameLeague=a.league===b.league;
+ const sameNation=a.nation===b.nation;
+ if(sameClub || (sameLeague&&sameNation)) return "green";
+ if(sameLeague || sameNation) return "orange";
+ return "red";
+}
+function chemForPlayer(id){
+ let pts=0;
+ for(const [a,b] of CHEM_LINKS){
+   const ia=window.clubState?.lineup?.[a], ib=window.clubState?.lineup?.[b];
+   if(ia!==id && ib!==id)continue;
+   const c=linkColor(playerById(ia),playerById(ib));
+   pts += c==="green"?2:c==="orange"?1:0;
+ }
+ const icons=window.clubState?.players?.filter(p=>p.type==="icon" && Object.values(window.clubState.lineup||{}).includes(p.id)).length||0;
+ if(icons>=3)pts+=1;
+ return Math.min(3,pts);
+}
+function teamChem(){
+ return FORMATION_SLOTS.reduce((sum,s)=>sum+(window.clubState?.lineup?.[s.key]?chemForPlayer(window.clubState.lineup[s.key]):0),0);
+}
+function teamOvr(){
+ const ps=FORMATION_SLOTS.map(s=>playerById(window.clubState?.lineup?.[s.key])).filter(Boolean);
+ return ps.length?Math.round(ps.reduce((a,p)=>a+p.ovr,0)/ps.length):0;
+}
+function initialsV4(name){return String(name||"?").split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase()}
+function renderSquadV4(){
+ const field=document.getElementById("field"); if(!field)return;
+ if(!window.clubState){
+   field.innerHTML='<div style="display:grid;place-items:center;height:100%;color:#8fa4b8">النادي فارغ — اختر بكج البداية</div>';
+   const ovr=document.querySelector("#squad .statsStrip .statBox:nth-child(2) b"); if(ovr)ovr.textContent="0";
+   const chem=document.querySelector("#squad .statBox.chem b"); if(chem)chem.textContent="0/33";
+   return;
+ }
+ let svg='<svg class="chemSvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">';
+ for(const [a,b] of CHEM_LINKS){
+   const sa=slotByKey(a),sb=slotByKey(b),pa=playerById(window.clubState.lineup[a]),pb=playerById(window.clubState.lineup[b]);
+   if(!sa||!sb)continue;
+   svg+=`<line class="${linkColor(pa,pb)}" x1="${sa.x}" y1="${sa.y}" x2="${sb.x}" y2="${sb.y}"/>`;
+ }
+ svg+='</svg>';
+ let cards="";
+ for(const s of FORMATION_SLOTS){
+   const id=window.clubState.lineup[s.key],p=playerById(id);
+   if(!p){
+     cards+=`<div class="slotEmpty" style="left:${s.x}%;top:${s.y}%" onclick="squadTap('field','${s.key}')">${s.role}</div>`;
+     continue;
+   }
+   const sel=window.squadSelection?.type==="field"&&window.squadSelection.key===s.key?" selected":"";
+   cards+=`<div class="sqCard${sel}" style="left:${s.x}%;top:${s.y}%" onclick="squadTap('field','${s.key}')"><div class="rating">${p.ovr}</div><div class="pos">${s.role}</div><div class="avatar">${initialsV4(p.n)}</div><div class="name">${p.n}</div><div class="clubMini">${p.club}</div><div class="miniFlag">${p.flag||""}</div><div class="chemDot">${chemForPlayer(p.id)}</div></div>`;
+ }
+ field.innerHTML=svg+cards;
+ let bench=document.getElementById("benchArea");
+ if(!bench){
+   bench=document.createElement("div"); bench.id="benchArea"; bench.className="benchWrap";
+   field.insertAdjacentElement("afterend",bench);
+ }
+ bench.innerHTML='<div class="benchTitle"><b>دكة الاحتياط</b><span class="sub">اضغط لاعبًا ثم اضغط المكان الجديد</span></div><div class="benchGrid">'+
+   window.clubState.bench.map((id,i)=>{
+     const p=playerById(id),sel=window.squadSelection?.type==="bench"&&window.squadSelection.index===i?" sel":"";
+     return p?`<div class="benchSlot has${sel}" onclick="squadTap('bench',${i})"><div><div class="benchFace">${p.f||"👤"}</div><b>${p.n}</b><small>${p.ovr} · ${p.pos}</small></div></div>`
+       :`<div class="benchSlot${sel}" onclick="squadTap('bench',${i})">احتياط ${i+1}</div>`;
+   }).join("")+'</div><div class="squadHint">النقل مسموح فقط إلى المركز الأساسي أو أحد المراكز الثانوية، أو إلى دكة الاحتياط.</div>';
+ const ovr=document.querySelector("#squad .statsStrip .statBox:nth-child(2) b"); if(ovr)ovr.textContent=teamOvr();
+ const chem=document.querySelector("#squad .statBox.chem b"); if(chem)chem.textContent=teamChem()+"/33";
+ updateDetailFromSelection();
+}
+function getLoc(type,key){
+ if(type==="field")return window.clubState.lineup[key]||null;
+ return window.clubState.bench[key]||null;
+}
+function setLoc(type,key,id){
+ if(type==="field")window.clubState.lineup[key]=id||null;
+ else window.clubState.bench[key]=id||null;
+}
+function roleAt(type,key){return type==="field"?slotByKey(key)?.role:null}
+function updateDetailFromSelection(){
+ if(!window.clubState)return;
+ let p=null;
+ if(window.squadSelection)p=playerById(getLoc(window.squadSelection.type,window.squadSelection.type==="field"?window.squadSelection.key:window.squadSelection.index));
+ if(!p)p=FORMATION_SLOTS.map(s=>playerById(window.clubState.lineup[s.key])).find(Boolean);
+ if(!p)return;
+ document.getElementById("detailName").textContent=p.n;
+ document.getElementById("detailPos").textContent=p.pos+(p.sec?.length?" / "+p.sec.join(", "):"");
+ document.getElementById("detailOvr").textContent=p.ovr;
+ document.getElementById("detailAvatar").textContent=initialsV4(p.n);
+ document.getElementById("detailMeta").textContent=`${p.club} · ${p.league} · ${p.flag} · كيمياء ${chemForPlayer(p.id)}/3`;
+ document.getElementById("da").textContent=p.a;document.getElementById("dd").textContent=p.d;document.getElementById("dp").textContent=p.p;document.getElementById("ds").textContent=p.s;
+}
+window.squadTap=async function(type,key){
+ if(!window.clubState)return;
+ const targetKey=key;
+ const targetId=getLoc(type,targetKey);
+ if(!window.squadSelection){
+   if(!targetId)return;
+   window.squadSelection=type==="field"?{type,key:targetKey}:{type,index:targetKey};
+   renderSquadV4(); return;
+ }
+ const src=window.squadSelection;
+ const srcKey=src.type==="field"?src.key:src.index;
+ if(src.type===type && srcKey===targetKey){window.squadSelection=null;renderSquadV4();return}
+ const srcId=getLoc(src.type,srcKey),srcP=playerById(srcId),dstP=playerById(targetId);
+ if(!srcP){window.squadSelection=null;renderSquadV4();return}
+ const targetRole=roleAt(type,targetKey),sourceRole=roleAt(src.type,srcKey);
+ if(targetRole && !playerFits(srcP,targetRole)){toastV4("هذا اللاعب لا يلعب في "+targetRole+" كمركز أساسي أو ثانوي");return}
+ if(dstP && sourceRole && !playerFits(dstP,sourceRole)){toastV4("لا يمكن التبديل لأن اللاعب الآخر لا يناسب المركز "+sourceRole);return}
+ setLoc(type,targetKey,srcId);
+ setLoc(src.type,srcKey,targetId);
+ window.squadSelection=null;
+ renderSquadV4();
+ if(window.clubWarsFirebase?.saveClubState) await window.clubWarsFirebase.saveClubState(window.clubState);
+};
+window.getBattleDeck=function(){
+ if(!window.clubState)return [];
+ return FORMATION_SLOTS.map(s=>playerById(window.clubState.lineup[s.key])).filter(Boolean);
+};
+window.prepareBattle=function(){
+ S={round:1,me:0,op:0,used:[],eused:[],sel:null,attr:null};
+ renderBattle();
+ const sec=document.getElementById("secret");
+ if(sec)sec.textContent=window.clubWarsOnline?.active?"اختر لاعبك ثم الصفة.":"أنشئ غرفة أو أدخل رمز غرفة أولًا؛ لا توجد مباراة ضد الكمبيوتر.";
+};
+window.renderBattle=function(){
+ const deck=window.getBattleDeck();
+ document.getElementById("myscore").textContent=S.me;document.getElementById("opscore").textContent=S.op;
+ document.getElementById("roundTrack").innerHTML=Array.from({length:11},(_,i)=>`<div class="roundBubble ${i<S.round-1?"done":""} ${i===S.round-1?"now":""}">${i+1}</div>`).join("");
+ document.getElementById("enemyRow").innerHTML=Array.from({length:11},(_,i)=>`<div class="enemyMini ${S.eused.includes(i)?"used":""}">?</div>`).join("");
+ document.getElementById("leftCount").textContent=Math.max(0,deck.length-S.used.length);
+ document.getElementById("myDeck").innerHTML=deck.map((p,i)=>`<div class="deckCard ${S.used.includes(i)?"used":""} ${S.sel===i?"sel":""}" onclick="pick(${i})"><div class="df">${p.f||"👤"}</div><b>${p.n}</b><span class="sub">${p.ovr} · ${p.pos}</span></div>`).join("");
+ const mb=document.getElementById("myBig"),attrs=document.getElementById("attrs"),lock=document.getElementById("lockBtn");
+ if(S.sel===null||!deck[S.sel]){mb.innerHTML='<div class="bface">👆</div><div class="bn">اختر بطاقة</div>';attrs.innerHTML="";lock.disabled=true}
+ else{const p=deck[S.sel];mb.innerHTML=bigCard(p);attrs.innerHTML=Object.keys(attrMeta).map(k=>`<button class="attr ${S.attr===k?"selected":""}" onclick="chooseAttr('${k}')">${attrMeta[k][1]} ${attrMeta[k][0]} <b>${p[k]}</b></button>`).join("");lock.disabled=!S.attr||!window.clubWarsOnline?.active}
+ document.getElementById("enemyBig").className="big enemy";
+ document.getElementById("enemyBig").innerHTML='<div class="bface">❓</div><div class="bn">بطاقة الخصم</div><div class="sub">مخفية حتى الكشف</div>';
+};
+window.resetBattle=window.prepareBattle;
+window.lockChoice=function(){
+ if(S.sel===null||!S.attr)return;
+ if(!window.clubWarsOnline?.active){toastV4("هذه الشاشة للعب ضد الشخص داخل الغرفة فقط. أنشئ غرفة أو أدخل رمزًا.");return}
+ window.clubWarsOnline.lockSelection(S.sel,S.attr);
+};
+window.applyClubState=function(club){window.clubState=club;window.squadSelection=null;renderSquadV4();prepareBattle()};
+window.showStarterModal=function(){
+ window.clubState=null;renderSquadV4();
+ const grid=document.getElementById("nationGrid");
+ grid.innerHTML=Object.entries(STARTER_NATIONS).map(([code,n])=>`<button class="nationPack" onclick="chooseStarterNation('${code}')"><span class="flag">${n.flag}</span><b>${n.name}</b><small>11 لاعب بداية · تقييمات منخفضة</small></button>`).join("");
+ document.getElementById("starterOverlay").classList.add("show");
+};
+window.chooseStarterNation=async function(code){
+ if(!window.clubWarsFirebase?.createStarterPack){toastV4("جاري الاتصال بـ Firebase...");return}
+ const club=makeStarterClub(code);
+ await window.clubWarsFirebase.createStarterPack(club);
+ document.getElementById("starterOverlay").classList.remove("show");
+ window.applyClubState(club);toastV4("تم فتح بكج البداية وبناء أول تشكيلة");
+};
+document.addEventListener("DOMContentLoaded",()=>{renderSquadV4();prepareBattle()});
+</script>
+
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -607,7 +859,7 @@ let roomId = null;
 let role = null;
 let unsubRoom = null;
 let resolvingRound = false;
-let advanceTimer = null;
+let advanceTimer = null;\nlet nickname = null;
 
 const statusEl = () => document.getElementById("fbStatus");
 const shortEl = () => document.getElementById("uidShort");
@@ -669,7 +921,8 @@ function revealRound(room, roundNo){
   const own = roleKey(), opp=otherRole();
   const myPick=r.picks?.[own], opPick=r.picks?.[opp];
   if(!myPick || !opPick) return;
-  const me=players[myPick.cardIndex], op=players[opPick.cardIndex];
+  const myDeck=room.decks?.[own]||[], opDeck=room.decks?.[opp]||[];
+  const me=myDeck[myPick.cardIndex], op=opDeck[opPick.cardIndex];
   const myVal=me?.[myPick.attr], opVal=op?.[opPick.attr];
   if(!me || !op) return;
   const eb=document.getElementById("enemyBig");
@@ -687,7 +940,7 @@ async function resolveIfHost(room){
   if(!r?.picks?.host || !r?.picks?.guest || r.result) return;
   resolvingRound=true;
   const hp=r.picks.host, gp=r.picks.guest;
-  const h=players[hp.cardIndex], g=players[gp.cardIndex];
+  const h=room.decks?.host?.[hp.cardIndex], g=room.decks?.guest?.[gp.cardIndex];
   const hv=h?.[hp.attr], gv=g?.[gp.attr];
   if(hv===undefined || gv===undefined){ resolvingRound=false; return; }
   const winner = hv===gv ? "draw" : (hv>gv ? "host" : "guest");
@@ -730,6 +983,14 @@ function watchRoom(code){
     role = room.hostUid===me ? "host" : (room.guestUid===me ? "guest" : role);
     const active = !!role;
     window.clubWarsOnline.active=active;
+    const myName=room.players?.[roleKey()]?.name || "أنت";
+    const opName=room.players?.[otherRole()]?.name || "بانتظار خصم";
+    const myNameEl=document.getElementById("myBattleName"),opNameEl=document.getElementById("opBattleName");
+    const mySubEl=document.getElementById("myBattleSub"),opSubEl=document.getElementById("opBattleSub");
+    if(myNameEl)myNameEl.textContent=myName;
+    if(opNameEl)opNameEl.textContent=opName;
+    if(mySubEl)mySubEl.textContent=role==="host"?"المضيف":"الضيف";
+    if(opSubEl)opSubEl.textContent=room.status==="waiting"?"لم يدخل بعد":"الخصم المتصل بالغرفة";
     setRoomUi(true,code,
       room.status==="waiting" ? "بانتظار اللاعب الثاني..." :
       room.status==="playing" ? `متصلان · الجولة ${room.round||1} من 11` :
@@ -739,7 +1000,7 @@ function watchRoom(code){
     const currentRound=room.rounds?.[current];
     const own=roleKey(), opp=otherRole();
     if(currentRound?.picks?.[opp] && !currentRound?.result){
-      const op=players[currentRound.picks[opp].cardIndex];
+      const op=room.decks?.[opp]?.[currentRound.picks[opp].cardIndex];
       const secret=document.getElementById("secret");
       if(secret) secret.innerHTML=`الخصم ثبّت <b>${attrMeta[currentRound.picks[opp].attr][1]} ${attrMeta[currentRound.picks[opp].attr][0]}</b> · الشعار <b>${op.club}</b><br><span class="sub">اسم اللاعب والرقم مخفيان حتى يثبت الطرفان</span>`;
     }
@@ -768,6 +1029,8 @@ window.clubWarsOnline = {
 
 window.onlineCreateRoom = async function(){
   if(!uid){ setStatus("لم يكتمل تسجيل الدخول بعد","bad"); return; }
+  const deck=window.getBattleDeck?.()||[];
+  if(deck.length!==11){ setStatus("يجب أن تكون التشكيلة الأساسية 11 لاعبًا","bad"); return; }
   let code, roomRef;
   for(let attempt=0;attempt<6;attempt++){
     code=code6(); roomRef=ref(db,`rooms/${code}`);
@@ -776,7 +1039,8 @@ window.onlineCreateRoom = async function(){
   await set(roomRef,{
     status:"waiting",hostUid:uid,guestUid:null,createdAt:serverTimestamp(),
     round:1,score:{host:0,guest:0},
-    players:{host:{uid,name:"المضيف"}}
+    players:{host:{uid,name:nickname||("Player-"+uid.slice(0,5))}},
+    decks:{host:deck}
   });
   roomId=code; role="host"; window.clubWarsOnline.active=true;
   setRoomUi(true,code,"بانتظار اللاعب الثاني...");
@@ -785,6 +1049,8 @@ window.onlineCreateRoom = async function(){
 
 window.onlineJoinRoom = async function(){
   if(!uid){ setStatus("لم يكتمل تسجيل الدخول بعد","bad"); return; }
+  const deck=window.getBattleDeck?.()||[];
+  if(deck.length!==11){ setStatus("يجب أن تكون التشكيلة الأساسية 11 لاعبًا","bad"); return; }
   const input=document.getElementById("roomCodeInput");
   const code=(input?.value||"").trim().toUpperCase();
   if(code.length!==6){ setStatus("أدخل رمز غرفة من 6 خانات","bad"); return; }
@@ -794,7 +1060,9 @@ window.onlineJoinRoom = async function(){
     room.guestUid=uid;
     room.status="playing";
     room.players=room.players||{};
-    room.players.guest={uid,name:"الضيف"};
+    room.players.guest={uid,name:nickname||("Player-"+uid.slice(0,5))};
+    room.decks=room.decks||{};
+    room.decks.guest=deck;
     room.startedAt=Date.now();
     return room;
   });
@@ -825,10 +1093,14 @@ onAuthStateChanged(auth, async user=>{
     uid=user.uid;
     setStatus("متصل بـ Firebase","ok");
     if(shortEl()) shortEl().textContent="ID "+uid.slice(0,6);
-    await set(ref(db,`users/${uid}/profile`),{
+    nickname="Player-"+uid.slice(0,5);
+    await update(ref(db,`users/${uid}/profile`),{
       createdOrSeenAt:serverTimestamp(),
-      nickname:"Player-"+uid.slice(0,5)
+      nickname
     });
+    const clubSnap=await get(ref(db,`users/${uid}/club`));
+    if(clubSnap.exists()) window.applyClubState?.(clubSnap.val());
+    else window.showStarterModal?.();
     const pres=ref(db,`presence/${uid}`);
     await set(pres,{online:true,lastSeen:serverTimestamp()});
     onDisconnect(pres).set({online:false,lastSeen:serverTimestamp()});
@@ -842,7 +1114,11 @@ onAuthStateChanged(auth, async user=>{
   }
 });
 
-window.clubWarsFirebase={app,auth,db,firebaseConfig};
+window.clubWarsFirebase={
+  app,auth,db,firebaseConfig,
+  async createStarterPack(club){ if(!uid)throw new Error("not-authenticated"); await set(ref(db,`users/${uid}/club`),club); },
+  async saveClubState(club){ if(!uid)return; await set(ref(db,`users/${uid}/club`),club); }
+};
 window.dispatchEvent(new CustomEvent("clubwars:firebase-ready"));
 </script>
 
