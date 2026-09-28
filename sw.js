@@ -1,4 +1,4 @@
-const CACHE = "club-wars-v3";
+const CACHE = "club-wars-v4";
 const ASSETS = [
   "./",
   "./index.html",
